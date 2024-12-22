@@ -19,20 +19,48 @@ class Database:
 
     def connect(self):
         try:
-            # Kết nối đến cơ sở dữ liệu
             self.connection = pyodbc.connect(f'DSN={self.dsn};UID={self.user};PWD={self.password};DATABASE={self.database}')
             self.cursor = self.connection.cursor()
             print("Kết nối thành công!")
         except pyodbc.Error as e:
             print(f"Lỗi kết nối: {e}")
+            raise
+
+    def is_connected(self):
+        try:
+            self.connection.cursor()
+            return True
+        except (pyodbc.InterfaceError, pyodbc.ProgrammingError):
+            return False
 
     def execute_query(self, query, params=None):
         try:
             if params:
-                self.cursor.execute(query, params)  # Truyền tham số vào câu truy vấn
+                self.cursor.execute(query, params)
             else:
-                self.cursor.execute(query)  # Truy vấn không có tham số
-            return self.cursor.fetchall()  # Trả về kết quả truy vấn
+                self.cursor.execute(query)
+            return self.cursor.fetchall()
+        except pyodbc.Error as e:
+            print(f"Lỗi truy vấn: {e}")
+            return None
+
+    def execute_non_query(self, query, params=None):
+        try:
+            if params:
+                self.cursor.execute(query, params)
+            else:
+                self.cursor.execute(query)
+            self.connection.commit()
+            print("Thao tác thành công!")
+        except pyodbc.Error as e:
+            print(f"Lỗi khi thực hiện thao tác: {e}")
+            self.connection.rollback()
+
+    def query_as_dict(self, query, params=None):
+        try:
+            self.execute_query(query, params)
+            columns = [column[0] for column in self.cursor.description]
+            return [dict(zip(columns, row)) for row in self.cursor.fetchall()]
         except pyodbc.Error as e:
             print(f"Lỗi truy vấn: {e}")
             return None
