@@ -1,15 +1,20 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 
+from model.YeuCauMau_Model import BloodRequest
+
 
 class BloodRequestManagementView:
-    def __init__(self, root):
+    def __init__(self, root, controller):
         self.root = root
+        self.controller = controller
         self.frame = tk.Frame(self.root, bg="white")  # Tạo Frame chính cho giao diện
 
-    def create_request_management_frame(self):
         self.setup_search_section()
         self.setup_request_table()
+        self.load_blood_requests()
+
+    def create_request_management_frame(self):
         return self.frame
 
     def setup_search_section(self):
@@ -83,13 +88,20 @@ class BloodRequestManagementView:
             else:
                 self.treeview.column(col, width=150, anchor="center", stretch=True)
 
+    def load_blood_requests(self):
+        requests = BloodRequest.get_all_requests()
+        self.update_request_table(requests)
+
     def update_request_table(self, data):
         """Cập nhật dữ liệu trong bảng"""
+        print("📊 Dữ liệu nhận được từ Controller:", data)
         for row in self.treeview.get_children():
             self.treeview.delete(row)
 
         for request in data:
-            self.treeview.insert("", "end", values=request)
+            # Chuyển dữ liệu từ tuple sang list dạng chuỗi
+            formatted_row = [str(item) if item is not None else '' for item in request]
+            self.treeview.insert("", "end", values=formatted_row)
 
     def search_blood_requests(self):
         search_term = self.search_entry.get()
