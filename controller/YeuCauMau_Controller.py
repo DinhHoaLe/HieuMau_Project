@@ -8,9 +8,7 @@ class BloodRequestController:
         self.load_blood_requests()
 
     def load_blood_requests(self):
-        # Lấy tất cả yêu cầu máu từ model
         requests = BloodRequest.get_all_requests()
-        # Cập nhật bảng với dữ liệu nhận được từ model
         self.view.update_request_table(requests)
 
     def search_blood_requests(self):

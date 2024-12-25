@@ -1,12 +1,14 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 
+from controller.YeuCauMau_Controller import BloodRequestController
 from view.BenhNhan_View import StatisticsView
 from view.KhoMau_View import BloodStorageView
 from view.NguoiHienMau_View import DonorManagementView
 from view.TongQuan_View import StatisticalView
 from view.YeuCauMau_View import BloodRequestManagementView
 
+from controller.NguoiHIenMau_Controller import DonorBloodController
 
 class AppView:
     def __init__(self, root, controller):
@@ -14,14 +16,6 @@ class AppView:
         self.controller = controller
         self.root.title("Quản lý ngân hàng máu")
 
-        # Thiết lập cửa sổ
-        # window_width = 1300
-        # window_height = 700
-        # screen_width = root.winfo_screenwidth()
-        # screen_height = root.winfo_screenheight()
-        # position_top = int(screen_height / 2 - window_height / 2)
-        # position_right = int(screen_width / 2 - window_width / 2)
-        # self.root.geometry(f'{window_width}x{window_height}+{position_right}+{position_top}')
         self.root.state('zoomed')
         self.root.resizable(True, True)
         self.root.configure(bg="#ffffff")
@@ -32,9 +26,9 @@ class AppView:
         # Frames cho từng giao diện
         self.frames = {
             "Tổng quan": StatisticalView(self.root).create_statistical_frame(),
-            "Quản lý người hiến máu": DonorManagementView(self.root).create_frame(),
+            "Quản lý người hiến máu": DonorManagementView(self.root, DonorBloodController).create_frame(),
             "Quản lý kho máu": BloodStorageView(self.root).create_blood_storage_frame(),
-            "Quản lý yêu cầu máu": BloodRequestManagementView(self.root).create_request_management_frame(),
+            "Quản lý yêu cầu máu": BloodRequestManagementView(self.root, BloodRequestController).create_request_management_frame(),
             "Quản lý bệnh nhân": StatisticsView(self.root).create_statistics_frame(),
         }
 

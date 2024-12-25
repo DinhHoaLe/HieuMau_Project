@@ -1,4 +1,4 @@
-from model.Sql_Connection import DatabaseConnection
+from model.Sql_Connection_Hoa import DatabaseConnection
 
 class BloodRequest:
     def __init__(self, request_id,request_code, patient_id,request_department,blood_type, rh_factor, volume_request, request_date, status, notes):
