@@ -19,25 +19,19 @@ class DonorBloodController:
         data = DonorModel.get_donor_by_id(donor_id)
         if data:
             return {
-                "Mã định danh": data[0],
-                "Mã máu": data[1],
-                "Họ và tên": data[2],
-                "Sinh nhật": data[3],
-                "Giới tính": data[4],
-                "Nhóm máu": data[5],
-                "Yếu tố Rh": data[6],
-                "Ngày hiến gần nhất": data[7],
-                "Điện thoại": data[8],
-                "Địa chỉ": data[9]
+                "Họ và tên": data[0],
+                "Sinh nhật": data[1],
+                "Giới tính": data[2],
+                "Nhóm máu": data[3],
+                "Yếu tố Rh": data[4],
+                "Ngày hiến gần nhất": data[5],
+                "Điện thoại": data[6],
+                "Địa chỉ": data[7]
             }
         return None
 
     # @staticmethod
     def update_donor(self, donor_id, donor_data):
-        """Xử lý cập nhật thông tin người hiến máu từ View."""
-        print("📝 ID người hiến máu:", donor_id)
-        print("📝 Dữ liệu nhận từ View:", donor_data)
-
         # Xử lý và chuyển đổi ngày tháng nếu có
         for key in ["Sinh nhật", "Ngày hiến gần nhất"]:
             if key in donor_data and donor_data[key]:
@@ -55,16 +49,12 @@ class DonorBloodController:
             print(f"❌ Lỗi khi cập nhật thông tin: {e}")
             messagebox.showerror("Lỗi", f"Không thể cập nhật thông tin: {e}")
 
-    def search_donor(self):
-        search_term = self.view.search_entry.get()
-        requests = DonorModel.search_donor(search_term)
+    def search_donor(self, search_term):
+        requests = DonorModel.search_donor_by_id(search_term)
         self.view.update_donor_table(requests)
 
     def add_donor(self, donor_data):
-        """Thêm người hiến máu mới."""
-        print(donor_data)
         if donor_data:
-            print("📝 Dữ liệu người hiến máu mới:", donor_data)
             try:
                 # Gọi model để thêm dữ liệu vào CSDL
                 DonorModel.add_donor(donor_data)
@@ -74,8 +64,10 @@ class DonorBloodController:
                 print(f"❌ Lỗi khi thêm người hiến máu: {e}")
                 messagebox.showerror("Lỗi", f"Không thể thêm người hiến máu: {e}")
 
-    def view_donor(self):
-        pass
+    @staticmethod
+    def view_donor(donor_id):
+        data = DonorModel.view_history(donor_id)
+        return data
 
     def delete_donor(self, request_id):
         """Xóa người hiến máu."""

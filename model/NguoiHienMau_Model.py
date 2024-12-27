@@ -26,7 +26,7 @@ class DonorModel:
     @staticmethod
     def get_donor_by_id(donor_id):
         db = DatabaseConnection()
-        query = "SELECT * FROM Donors WHERE DonorID = ?"
+        query = "SELECT FullName , DateOfBirth , Gender , BloodType ,RhFactor , LastDonationDate, ContactNumber , Address FROM Donors WHERE DonorID = ?"
         result = db.execute_query(query, (donor_id,))
         db.close()
         if result:
@@ -42,7 +42,6 @@ class DonorModel:
         query = """
             UPDATE Donors
             SET 
-                DonorCode = ?,
                 FullName = ?,
                 DateOfBirth = ?,
                 Gender = ?,
@@ -54,10 +53,7 @@ class DonorModel:
             WHERE DonorID = ?;
         """
         try:
-            print("🛠️ Thực thi truy vấn cập nhật với dữ liệu sau:")
-            print(donor_data)
             db.execute_query(query, (
-                donor_data.get("Mã máu"),
                 donor_data.get("Họ và tên"),
                 donor_data.get("Sinh nhật"),
                 donor_data.get("Giới tính"),
@@ -75,14 +71,6 @@ class DonorModel:
             raise e
         finally:
             db.close()
-
-    @staticmethod
-    def search_donor(search_term):
-        db = DatabaseConnection()
-        query = "SELECT * FROM Donors WHERE DonorID LIKE ? OR FullName LIKE ?"
-        result = db.execute_query(query, ('%' + search_term + '%', '%' + search_term + '%'))
-        db.close()
-        return result
 
     @staticmethod
     def add_donor(donor_data):
@@ -124,3 +112,19 @@ class DonorModel:
             print(f"❌ Lỗi khi xóa người hiến máu: {e}")
         finally:
             db.close()
+
+    @staticmethod
+    def search_donor_by_id(search_term):
+        db = DatabaseConnection()
+        query = "SELECT * FROM Donors WHERE DonorID LIKE ? OR FullName LIKE ?"
+        result = db.execute_query(query, ('%' + search_term + '%', '%' + search_term + '%'))
+        db.close()
+        return result
+
+    @staticmethod
+    def view_history(donor_id):
+        db = DatabaseConnection()
+        query = "SELECT RecordID, RecordCode, DonationDate, VolumeDonated FROM DonationRecords WHERE DonorID = ?"
+        result = db.execute_query(query, (donor_id,))
+        db.close()
+        return result

@@ -290,3 +290,6 @@ class BloodStorageView:
 
         # Hiển thị khung đầu tiên (dựa trên giá trị mặc định)
         toggle_source("Người hiến máu")
+
+
+
