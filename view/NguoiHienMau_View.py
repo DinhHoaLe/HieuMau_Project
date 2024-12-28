@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 import datetime
+from tkcalendar import DateEntry
 
 from model.NguoiHienMau_Model import DonorModel
 
@@ -38,52 +39,22 @@ class DonorManagementView:
         search_button = tk.Button(
             search_frame,
             text="Tìm kiếm",
-            command=self.controller.search_donor,
+            command=lambda: self.controller.search_donor(self, self.search_entry.get()),
             font=("Arial", 12),
             bg="#D3D3D3",
             fg="black"
         )
         search_button.grid(row=0, column=2, padx=10)
 
-    def setup_donor_table(self):
-        """Thiết lập bảng dữ liệu"""
-        self.table_frame = tk.Frame(self.frame)
-        self.table_frame.pack(pady=20, fill="both", expand=True)
-
-        columns = (
-            "Mã định danh", "Mã máu", "Họ và tên", "Sinh nhật", "Giới tính", "Nhóm máu", "Yếu tố Rh",
-            "Ngày hiến gần nhất", "Điện thoại", "Địa chỉ", "Action"
+        add_button = tk.Button(
+            search_frame,
+            text="Thêm",
+            command=self.show_add_modal,
+            font=("Arial", 12),
+            bg="#D3D3D3",
+            fg="black"
         )
-
-        style = ttk.Style()
-        style.theme_use("clam")
-        style.configure("Treeview.Heading", font=("Arial", 12, "bold"), background="#D3D3D3", foreground="black")
-        style.configure("Treeview", font=("Arial", 11), rowheight=25)
-
-        self.treeview = ttk.Treeview(self.table_frame, columns=columns, show="headings")
-        self.treeview.pack(fill="both", expand=True)
-
-        # Cấu hình cột với chiều rộng cố định và động
-        self.fixed_columns = {
-            "Mã định danh": 120,
-            "Mã máu": 100,
-            "Sinh nhật": 100,
-            "Giới tính": 80,
-            "Action": 80,
-            "Nhóm máu": 100,
-            "Yếu tố Rh": 100,
-        }
-        self.dynamic_columns = [
-            "Họ và tên",
-            "Ngày hiến gần nhất", "Điện thoại", "Địa chỉ", "Action"
-        ]
-
-        for col in columns:
-            self.treeview.heading(col, text=col)
-            if col in self.fixed_columns:
-                self.treeview.column(col, width=self.fixed_columns[col], anchor="center", stretch=False)
-            else:
-                self.treeview.column(col, width=100, anchor="center", stretch=True)
+        add_button.grid(row=0, column=3, padx=10)
 
     def adjust_column_width(self, event):
         """Tự động điều chỉnh độ rộng cột khi thay đổi kích thước"""
@@ -158,7 +129,6 @@ class DonorManagementView:
         }
         self.dynamic_columns = [
             "Họ và tên",
-
         ]
 
         for col in columns:
@@ -189,37 +159,287 @@ class DonorManagementView:
         column = self.treeview.identify_column(event.x)
         row_id = self.treeview.identify_row(event.y)
 
-        # Kiểm tra xem click có nằm ở cột 'Action' không
         if region == "cell" and column == f"#{len(self.treeview['columns'])}":
             if row_id:
-                # Hiển thị menu
-                action_menu = tk.Menu(self.root, tearoff=0)
-                action_menu.add_command(label="View", command=lambda: self.show_edit_modal(row_id))
-                action_menu.add_command(label="Edit", command=lambda: self.controller.edit_donor(row_id))
-                action_menu.add_command(label="Delete", command=lambda: self.controller.delete_donor(row_id))
-                action_menu.post(event.x_root, event.y_root)
+                # Lấy giá trị DonorID từ dòng được chọn
+                item = self.treeview.item(row_id)
+                values = item.get('values')
+                if values:
+                    donor_id = values[0]  # Lấy giá trị Mã định danh (ID) từ cột đầu tiên
+                    # Hiển thị menu
+                    action_menu = tk.Menu(self.root, tearoff=0)
+                    action_menu.add_command(label="Edit", command=lambda: self.show_edit_modal(donor_id))
+                    action_menu.add_command(label="View",
+                                            command=lambda: self.modal_blood_donation_history(donor_id))
+                    action_menu.add_command(label="Delete",
+                                            command=lambda: self.controller.delete_donor(self, donor_id))
+                    action_menu.post(event.x_root, event.y_root)
 
-    def show_edit_modal(self, row_id):
-        """Hiển thị modal chỉnh sửa thông tin người hiến máu."""
+    def show_edit_modal(self, donor_id=None):
+        if donor_id is None:
+            messagebox.showerror("Lỗi", "Không tìm thấy ID người hiến máu.")
+            return
+
+        # Tạo cửa sổ modal
         modal = tk.Toplevel(self.root)
         modal.title("Chỉnh sửa thông tin người hiến máu")
-        modal.geometry("600x500")
+        modal.geometry("400x450")
+        modal.resizable(False, False)
+        modal.transient(self.root)  # Giữ modal trên cửa sổ chính
+        modal.grab_set()  # Ngăn chặn tương tác với cửa sổ chính khi modal mở
 
-        fields = ["Mã định danh", "Mã máu", "Họ và tên", "Sinh nhật", "Giới tính", "Nhóm máu", "Yếu tố Rh",
-                  "Ngày hiến gần nhất", "Điện thoại", "Địa chỉ"]
+        # Trường dữ liệu cần chỉnh sửa
+        fields = [
+            ("Họ và tên", "text"),
+            ("Sinh nhật", "date"),
+            ("Giới tính", "select_gender"),
+            ("Nhóm máu", "select_blood"),
+            ("Yếu tố Rh", "text"),
+            ("Ngày hiến gần nhất", "date"),
+            ("Điện thoại", "text"),
+            ("Địa chỉ", "text")
+        ]
         self.edit_entries = {}
 
-        for i, field in enumerate(fields):
-            tk.Label(modal, text=field, font=("Arial", 12)).grid(row=i, column=0, padx=10, pady=5, sticky="e")
-            entry = tk.Entry(modal, font=("Arial", 12))
-            entry.grid(row=i, column=1, padx=10, pady=5, sticky="w")
-            self.edit_entries[field] = entry
+        # Lấy thông tin người hiến máu từ Controller
+        donor_data = self.controller.get_info_donor(donor_id)
 
-        button_frame = tk.Frame(modal)
+        if not donor_data:
+            messagebox.showerror("Lỗi", f"Không tìm thấy thông tin người hiến máu với ID {donor_id}.")
+            modal.destroy()
+            return
+
+        form_frame = tk.Frame(modal, padx=10, pady=10)
+        form_frame.pack(fill="both", expand=True)
+
+        # Tạo các ô nhập liệu và điền dữ liệu ban đầu
+        for i, (field_name, field_type) in enumerate(fields):
+            label = tk.Label(form_frame, text=field_name, font=("Arial", 12))
+            label.grid(row=i, column=0, sticky="w", pady=5)
+
+            value = donor_data.get(field_name, "")
+
+            # Xử lý loại widget dựa trên field_type
+            if field_type == "text":
+                entry = tk.Entry(form_frame, font=("Arial", 12), width=30)
+                entry.grid(row=i, column=1, pady=5, padx=10)
+                entry.insert(0, value)
+                self.edit_entries[field_name] = entry
+
+            elif field_type == "date":
+                entry = DateEntry(form_frame, font=("Arial", 12), width=28, date_pattern='yyyy-mm-dd')
+                entry.grid(row=i, column=1, pady=5, padx=10)
+                if isinstance(value, (datetime.date, datetime.datetime)):
+                    entry.set_date(value)
+                self.edit_entries[field_name] = entry
+
+            elif field_type == "select_gender":
+                patient_var = tk.StringVar()
+                patient_var.set(value if value else "Chọn giới tính")
+                entry = ttk.OptionMenu(form_frame, patient_var, value, "F", "M")
+                entry.grid(row=i, column=1, pady=5, padx=10, sticky="w")
+                entry.config(width=30)
+                self.edit_entries[field_name] = patient_var
+
+
+            elif field_type == "select_blood":
+                blood_var = tk.StringVar()
+                blood_var.set(value if value else "Chọn nhóm máu")
+                entry = ttk.OptionMenu(form_frame, blood_var, value, "A", "B", "AB", "O")
+                entry.grid(row=i, column=1, pady=5, padx=10, sticky="w")
+                entry.config(width=30)
+                self.edit_entries[field_name] = blood_var
+
+        # Khung nút điều khiển
+        button_frame = tk.Frame(form_frame)
         button_frame.grid(row=len(fields), column=0, columnspan=2, pady=20)
 
-        save_button = tk.Button(button_frame, text="Lưu", command=lambda: self.controller.save_donor_edit(row_id))
+        save_button = tk.Button(
+            button_frame,
+            text="Lưu",
+            font=("Arial", 12),
+            bg="#4CAF50",
+            fg="white",
+            command=lambda: self.controller.update_donor(self, donor_id, self.get_edited_data())
+        )
         save_button.pack(side="left", padx=10)
 
-        cancel_button = tk.Button(button_frame, text="Hủy", command=modal.destroy)
+        cancel_button = tk.Button(
+            button_frame,
+            text="Hủy",
+            font=("Arial", 12),
+            bg="#f44336",
+            fg="white",
+            command=modal.destroy
+        )
         cancel_button.pack(side="left", padx=10)
+
+        # modal.mainloop()
+
+    def get_edited_data(self):
+        """Lấy dữ liệu từ các ô nhập liệu."""
+        edited_data = {}
+        for key, entry in self.edit_entries.items():
+            edited_data[key] = entry.get()
+        # print("✅ Dữ liệu chỉnh sửa:", edited_data)
+        return edited_data
+
+    def show_add_modal(self):
+        # Tạo cửa sổ modal
+        modal = tk.Toplevel(self.root)
+        modal.title("Thêm người hiến máu")
+        modal.geometry("500x400")
+        modal.resizable(False, False)
+        modal.transient(self.root)  # Giữ modal trên cửa sổ chính
+        modal.grab_set()  # Ngăn chặn tương tác với cửa sổ chính khi modal mở
+
+        # Danh sách các trường thông tin
+        fields = [
+            ("Họ và tên", "text"),
+            ("Sinh nhật", "date"),
+            ("Giới tính", "select_gender"),
+            ("Nhóm máu", "select_blood"),
+            ("Yếu tố Rh", "text"),
+            ("Ngày hiến gần nhất", "date"),
+            ("Điện thoại", "text"),
+            ("Địa chỉ", "text")
+        ]
+
+        # Frame chứa các trường nhập liệu
+        form_frame = tk.Frame(modal, padx=10, pady=10)
+        form_frame.pack(fill="both", expand=True)
+
+        # Lưu trữ các widget để xử lý sau này
+        self.entries = {}
+
+        # Tạo các nhãn và ô nhập liệu
+        for i, (field_name, field_type) in enumerate(fields):
+            # Nhãn
+            label = tk.Label(form_frame, text=field_name, font=("Arial", 12))
+            label.grid(row=i, column=0, sticky="w", pady=5)
+
+            # Xử lý loại widget dựa trên field_type
+            if field_type == "text":
+                # Ô nhập liệu thông thường
+                entry = tk.Entry(form_frame, font=("Arial", 12), width=30)
+                entry.grid(row=i, column=1, pady=5, padx=10)
+                self.entries[field_name] = entry
+
+            elif field_type == "date":
+                # DateEntry cho ngày tháng
+                entry = DateEntry(form_frame, font=("Arial", 12), width=28, date_pattern='yyyy-mm-dd')
+                entry.grid(row=i, column=1, pady=5, padx=10)
+                self.entries[field_name] = entry
+
+            elif field_type == "select_gender":
+
+                gender_var = tk.StringVar()
+                gender_var.set("Chọn giới tính")  # Giá trị mặc định
+
+                entry = ttk.OptionMenu(form_frame, gender_var, "Chọn giới tính", "F", "M")
+                entry.grid(row=i, column=1, pady=5, padx=10, sticky="w")
+
+                # Thêm frame phụ để căn chỉnh chiều rộng
+                entry_frame = tk.Frame(form_frame)
+                entry_frame.grid(row=i, column=1, pady=5, padx=10, sticky="w")
+                entry.config(width=40)
+                self.entries[field_name] = gender_var
+
+            elif field_type == "select_blood":
+                blood_var = tk.StringVar()
+                blood_var.set("Chọn nhóm máu")  # Giá trị mặc định
+
+                entry = ttk.OptionMenu(form_frame, blood_var, "Chọn nhóm máu", "A", "B", "AB", "O")
+                entry.grid(row=i, column=1, pady=5, padx=10, sticky="w")
+
+                entry_frame = tk.Frame(form_frame)
+                entry_frame.grid(row=i, column=1, pady=5, padx=10, sticky="w")
+                entry.config(width=40)
+                self.entries[field_name] = blood_var
+
+        # Frame chứa nút bấm
+        button_frame = tk.Frame(modal, padx=10, pady=10)
+        button_frame.pack(pady=10)
+
+        # Nút lưu
+        save_button = tk.Button(
+            button_frame,
+            text="Lưu",
+            font=("Arial", 12),
+            bg="#4CAF50",
+            fg="white",
+            command=lambda: self.controller.add_donor(self, self.save_donor_data())
+        )
+        save_button.grid(row=0, column=0, padx=10)
+
+        # Nút hủy
+        cancel_button = tk.Button(
+            button_frame,
+            text="Hủy",
+            font=("Arial", 12),
+            bg="#f44336",
+            fg="white",
+            command=modal.destroy
+        )
+        cancel_button.grid(row=0, column=1, padx=10)
+
+    def save_donor_data(self):
+        # Lấy dữ liệu từ các trường nhập
+        donor_data = {}
+        for field, widget in self.entries.items():
+            if isinstance(widget, tk.StringVar):  # Dùng với OptionMenu
+                donor_data[field] = widget.get()
+            else:  # Dùng với Entry hoặc DateEntry
+                donor_data[field] = widget.get()
+        print("Dữ liệu người hiến máu:", donor_data)
+        return donor_data
+
+    def modal_blood_donation_history(self, donor_id=None):
+        modal = tk.Toplevel(self.root)
+        modal.title("Lịch sử người hiến máu")
+        modal.geometry("420x300")
+        modal.resizable(False, False)
+        modal.transient(self.root)
+        modal.grab_set()
+
+        print(donor_id)
+        history_data = self.controller.view_donor(donor_id)
+        print("📝 Dữ liệu lịch sử hiến máu:", history_data)
+
+        # Tạo Treeview
+        table_frame = tk.Frame(modal)
+        table_frame.pack(pady=20, fill="both", expand=True)
+
+        columns = ("Mã định danh", "Mã lịch sử", "Ngày hiến", "Thể tích")
+
+        style = ttk.Style()
+        style.theme_use("clam")
+        style.configure("Treeview.Heading", font=("Arial", 12, "bold"), background="#D3D3D3", foreground="black")
+        style.configure("Treeview", font=("Arial", 11), rowheight=25)
+
+        treeview = ttk.Treeview(table_frame, columns=columns, show="headings")
+        treeview.pack(fill="both", expand=True)
+
+        fixed_columns = {
+            "Mã định danh": 120,
+            "Mã lịch sử": 100,
+            "Ngày hiến": 100,
+            "Thể tích": 100,
+        }
+
+        for col in columns:
+            treeview.heading(col, text=col)
+            treeview.column(col, width=fixed_columns.get(col, 100), anchor="center", stretch=False)
+
+        # Thêm dữ liệu vào Treeview
+        for record in history_data:
+            print("🔹 Chèn dòng vào Treeview:", record)
+            formatted_record = [str(item) for item in record]  # Chuyển từng phần tử thành chuỗi
+            treeview.insert("", "end", values=formatted_record)
+
+        row_count = len(history_data)
+        modal_height = 300 + (row_count * 10)  # 30 pixel mỗi dòng, 200 pixel cho phần khung khác
+        max_height = 600  # Giới hạn chiều cao tối đa của modal
+
+        # Áp dụng chiều cao mới
+        modal.geometry(f"420x{min(modal_height, max_height)}")

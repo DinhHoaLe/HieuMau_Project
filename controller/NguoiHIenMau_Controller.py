@@ -1,5 +1,7 @@
 from model.NguoiHienMau_Model import DonorModel
 from view.NguoiHienMau_View import DonorManagementView
+from datetime import datetime
+from tkinter import messagebox
 
 
 class DonorBloodController:
@@ -11,30 +13,68 @@ class DonorBloodController:
         data = DonorModel.get_all_donor()
         self.view.update_donor_table(data)
 
-    def get_info_donor(self, donor_id):
-        donor_data = self.view.treeview.item(donor_id)
-        return donor_data
+    @staticmethod
+    def get_info_donor(donor_id):
+        """Lấy thông tin chi tiết người hiến máu."""
+        data = DonorModel.get_donor_by_id(donor_id)
+        if data:
+            return {
+                "Họ và tên": data[0],
+                "Sinh nhật": data[1],
+                "Giới tính": data[2],
+                "Nhóm máu": data[3],
+                "Yếu tố Rh": data[4],
+                "Ngày hiến gần nhất": data[5],
+                "Điện thoại": data[6],
+                "Địa chỉ": data[7]
+            }
+        return None
 
-    def search_donor(self):
-        search_term = self.view.search_entry.get()
-        requests = DonorModel.search_donor(search_term)
+    # @staticmethod
+    def update_donor(self, donor_id, donor_data):
+        # Xử lý và chuyển đổi ngày tháng nếu có
+        for key in ["Sinh nhật", "Ngày hiến gần nhất"]:
+            if key in donor_data and donor_data[key]:
+                try:
+                    donor_data[key] = datetime.strptime(donor_data[key], "%Y-%m-%d").date()
+                except ValueError:
+                    messagebox.showerror("Lỗi", f"Ngày không đúng định dạng (YYYY-MM-DD): {donor_data[key]}")
+                    return
+
+        try:
+            DonorModel.update_donor_by_id(donor_id, donor_data)
+            self.load_donor()
+            messagebox.showinfo("Thành công", "Cập nhật thông tin người hiến máu thành công!")
+        except Exception as e:
+            print(f"❌ Lỗi khi cập nhật thông tin: {e}")
+            messagebox.showerror("Lỗi", f"Không thể cập nhật thông tin: {e}")
+
+    def search_donor(self, search_term):
+        requests = DonorModel.search_donor_by_id(search_term)
         self.view.update_donor_table(requests)
 
-    def add_donor(self):
-        pass
+    def add_donor(self, donor_data):
+        if donor_data:
+            try:
+                # Gọi model để thêm dữ liệu vào CSDL
+                DonorModel.add_donor(donor_data)
+                messagebox.showinfo("Thành công", "Thêm người hiến máu thành công!")
+                self.load_donor()  # Cập nhật lại bảng
+            except Exception as e:
+                print(f"❌ Lỗi khi thêm người hiến máu: {e}")
+                messagebox.showerror("Lỗi", f"Không thể thêm người hiến máu: {e}")
 
-    def edit_donor(self):
-        pass
-
-    def view_donor(self):
-        pass
+    @staticmethod
+    def view_donor(donor_id):
+        data = DonorModel.view_history(donor_id)
+        return data
 
     def delete_donor(self, request_id):
         """Xóa người hiến máu."""
         try:
-            DonorModel.delete_donor(request_id)
-            self.view.show_message("✅ Người hiến máu đã được xóa thành công!")
+            DonorModel.delete_donor_by_id(request_id)
+            messagebox.showinfo("Thành công", "Xóa người hiến máu thành công!")
             self.load_donor()  # Tải lại danh sách sau khi xóa
         except Exception as e:
             print(f"❌ Lỗi khi xóa người hiến máu: {e}")
-            self.view.show_message(f"❌ Lỗi: {e}")
+            messagebox.showerror("Lỗi", f"Không thể xóa người hiến máu: {e}")

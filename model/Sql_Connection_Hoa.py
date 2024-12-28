@@ -1,15 +1,21 @@
 import pyodbc
 
 # Thông tin kết nối
-drive = 'SQL Server'
+# drive = 'ODBC Driver 17 for SQL Server'
+# server = 'ADMINISTRATOR\\DINHHOA'
+# database = 'BloodBank_db'
+# username = 'sa'
+# password = '19001560Hoa.'
+
+drive = 'ODBC Driver 17 for SQL Server'
 server = 'LAPTOP-DVN34OKL'
 database = 'BloodBank_db'
 username = 'sa'
 password = '1'
 
-
 # Chuỗi kết nối
 str_sql = 'DRIVER={0};SERVER={1};DATABASE={2};UID={3};PWD={4}'.format(drive, server, database, username, password)
+
 
 class DatabaseConnection:
     def __init__(self):
@@ -28,10 +34,13 @@ class DatabaseConnection:
                 self.cursor.execute(query, params)
             else:
                 self.cursor.execute(query)
-            return self.cursor.fetchall()
+
+            if query.strip().lower().startswith('select'):
+                return self.cursor.fetchall()
+            return None  # Trả về None cho INSERT, UPDATE, DELETE
         except Exception as e:
-            print(f"Lỗi khi thực thi truy vấn: {e}")
-            return []
+            print(f"❌ Lỗi khi thực thi truy vấn: {e}")
+            raise
 
     def commit(self):
         try:
