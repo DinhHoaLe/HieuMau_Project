@@ -18,7 +18,27 @@ class BloodRequest:
     @staticmethod
     def get_all_requests():
         db = DatabaseConnection()
-        query = "SELECT * FROM Requests"
+        # query = "SELECT * FROM Requests"
+        query = """
+               SELECT 
+                   RQ.RequestID,
+                   PT.PatientID, 
+                   PT.FullName, 
+                   RQ.BloodType, 
+                   RQ.RhFactor, 
+                   RQ.VolumeRequested, 
+                   RQ.RequestingDepartment, 
+                   RQ.RequestDate, 
+                   RQ.Status, 
+                   RQ.Notes
+               FROM 
+                   REQUESTS RQ
+               JOIN 
+                   PATIENTS PT 
+               ON 
+                   RQ.PatientID = PT.PatientID
+               """
+
         result = db.execute_query(query)
         db.close()
         return result
@@ -118,7 +138,7 @@ class BloodRequest:
         db = DatabaseConnection()
         query = """
                 SELECT * FROM requests
-                WHERE patientid LIKE ? OR requestid LIKE ?
+                WHERE patientid LIKE ? OR patientname LIKE ?
                 """
         try:
             result = db.execute_query(query, ('%' + search_term + '%', '%' + search_term + '%'))
