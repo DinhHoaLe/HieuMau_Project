@@ -9,12 +9,11 @@ class BloodRequestManagementView:
     def __init__(self, root, controller):
         self.root = root
         self.controller = controller
-        self.frame = tk.Frame(self.root, bg="white")  # Tạo Frame chính cho giao diện
-
+        self.frame = tk.Frame(self.root, bg="white")
         self.setup_search_section()
         self.setup_request_table()
         self.load_blood_requests()
-
+        self.setup_action_buttons()
         # self.treeview.bind("<Configure>", self.adjust_column_width)
 
     def create_request_management_frame(self):
@@ -37,10 +36,8 @@ class BloodRequestManagementView:
         # Entry Ô nhập tìm kiếm
         self.search_entry = tk.Entry(search_frame, font=("Arial", 14), width=60)
         self.search_entry.grid(row=0, column=1, padx=10)
-
-        # Frame con chứa các button thêm sửa xóa
-        btns_frame = tk.Frame(outer_frame, bg="#f8f9fa")
-        btns_frame.pack(pady=5, anchor="center")  # Giảm padding dọc xuống 5
+        # Bind the Enter key press event to the search method
+        self.search_entry.bind('<Return>', self.search_blood_requests)
 
         # Button Nút tìm kiếm
         search_button = tk.Button(
@@ -52,37 +49,6 @@ class BloodRequestManagementView:
             fg="black"
         )
         search_button.grid(row=0, column=2, padx=10)
-
-        add_button = tk.Button(
-            btns_frame,
-            text="Thêm",
-            command=self.show_add_modal,
-            font=("Arial", 12),
-            bg="#4CAF50",
-            fg="white"
-        )
-        add_button.grid(row=0, column=3, padx=10)
-
-        edit_button = tk.Button(
-            btns_frame,
-            text="Sửa",
-            command= self.edit_request,
-            font=("Arial", 12),
-            bg="#2196F3",
-            fg="white"
-        )
-        edit_button.grid(row=0, column=4, padx=10)
-
-        delete_button = tk.Button(
-            btns_frame,
-            text="Xóa",
-            command =self.show_confirm_delete,
-            font=("Arial", 12),
-            bg="#F44336",
-            fg="white"
-        )
-        delete_button.grid(row=0, column=5, padx=10)
-
 
     def update_request_table_for_search(self, requests):
         for row in self.treeview.get_children():
@@ -217,10 +183,16 @@ class BloodRequestManagementView:
             )
             self.treeview.insert("", "end", values=formatted_row)
 
+    def search_blood_requests(self, event=None):
+        # Check if event is None (button click), otherwise it's Enter key press
+        search_term = self.search_entry.get().strip()
 
-    def search_blood_requests(self):
-        search_term = self.search_entry.get()
-        result = BloodRequest.search_requests_by_patient(search_term)
+        if not search_term:
+            result = BloodRequest.get_all_requests()
+        else:
+            result = BloodRequest.search_requests_by_patient(search_term)  # Perform search with the term
+
+        # Call method to update the table or UI with results
         self.update_request_table(result)
 
     def show_add_modal(self):
@@ -528,5 +500,33 @@ class BloodRequestManagementView:
             edited_data[key] = entry.get()
         print("✅ Dữ liệu chỉnh sửa:", edited_data)
         return edited_data
+
+    def setup_action_buttons(self):
+
+        if hasattr(self, 'add_button'):  # Check if button is already created
+            return  # Do not create again
+
+        # Create a frame to hold the buttons and center them
+        button_frame = tk.Frame(self.frame)
+        button_frame.pack(anchor='center')
+
+        # Create the buttons
+        self.add_button = tk.Button(button_frame, text="Thêm yêu cầu", command=self.show_add_modal, font=("Arial", 12),
+                                    bg="#4CAF50", fg="white")
+        self.edit_button = tk.Button(button_frame, text="Sửa yêu cầu", command=self.edit_request, font=("Arial", 12),
+                                     bg="#FFA500", fg="white")
+        self.delete_button = tk.Button(button_frame, text="Xóa yêu cầu", command=self.show_confirm_delete,
+                                       font=("Arial", 12), bg="#FF6347", fg="white")
+
+        # Pack the buttons on the same row with a 20px gap between them
+        self.add_button.pack(side="left", padx=10)
+        self.edit_button.pack(side="left", padx=10)
+        self.delete_button.pack(side="left", padx=10)
+
+
+
+
+
+
 
 
