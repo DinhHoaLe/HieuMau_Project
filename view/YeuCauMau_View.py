@@ -85,7 +85,6 @@ class BloodRequestManagementView:
 
 
     def update_request_table_for_search(self, requests):
-        # Giả sử bạn sử dụng Treeview để hiển thị bảng
         for row in self.treeview.get_children():
             self.treeview.delete(row)  # Xóa tất cả các dòng hiện tại trong bảng
 
@@ -204,19 +203,20 @@ class BloodRequestManagementView:
         for request in data:
             # Chuyển datetime.date thành chuỗi
             formatted_row = (
-                request[0],  # ID
-                request[1],  # Mã Nhà Tài Trợ
-                request[2],  # Tên Nhà Tài Trợ
-                request[3],
-                request[4],  # Giới Tính
-                request[5],  # Nhóm Máu
-                request[6],  # Rh
+                request[0],  # Mã yêu cầu
+                request[1],  # Mã bệnh nhân
+                request[2],  # Tên bệnh nhân
+                request[3],    # Nhóm máu
+                request[4],  # Yếu tố Rh
+                request[5],  # Lượng máu
+                request[6],  # Khoa Yêu Cầu
                 request[7].strftime('%Y-%m-%d') if isinstance(request[7], datetime.date) else request[7],
-                request[8],  # Số Điện Thoại
-                request[9],  # Địa Chỉ
-                 "Xử lý"  # Dữ liệu cho Action
+                request[8],  # Trạng thái
+                request[9],  # Ghi chú
+                "Xử lý"  # Dữ liệu cho Action
             )
             self.treeview.insert("", "end", values=formatted_row)
+
 
     def search_blood_requests(self):
         search_term = self.search_entry.get()
@@ -236,6 +236,7 @@ class BloodRequestManagementView:
 
         fields = [
             ("Mã bệnh nhân", "select_patientId"),
+            # ("Tên bệnh nhân","select_fullname"),
             ("Khoa yêu cầu", "select_RequestingDepartment"),
             ("Nhóm máu", "select_blood"),
             ("Yếu tố Rh", "text"),

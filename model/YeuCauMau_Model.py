@@ -137,8 +137,24 @@ class BloodRequest:
         """Tìm kiếm thông tin yêu cầu hiến máu theo mã bệnh nhân hoặc tên bệnh nhân."""
         db = DatabaseConnection()
         query = """
-                SELECT * FROM requests
-                WHERE patientid LIKE ? OR patientname LIKE ?
+                SELECT 
+                   RQ.RequestID,
+                   PT.PatientID, 
+                   PT.FullName, 
+                   RQ.BloodType, 
+                   RQ.RhFactor, 
+                   RQ.VolumeRequested, 
+                   RQ.RequestingDepartment, 
+                   RQ.RequestDate, 
+                   RQ.Status, 
+                   RQ.Notes
+               FROM 
+                   REQUESTS RQ
+               JOIN 
+                   PATIENTS PT 
+               ON 
+                   RQ.PatientID = PT.PatientID
+                WHERE pt.PatientID LIKE ? OR pt.FullName LIKE ?
                 """
         try:
             result = db.execute_query(query, ('%' + search_term + '%', '%' + search_term + '%'))

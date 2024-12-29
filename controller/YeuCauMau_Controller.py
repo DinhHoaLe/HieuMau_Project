@@ -74,3 +74,5 @@ class BloodRequestController:
         # Cập nhật lại bảng sau khi xóa
         messagebox.showinfo("Thành công", "Xóa yêu cầu hiến máu thành công!")
         self.load_blood_requests()  # Tải lại danh sách yêu cầu máu sau khi xóa
+
+
