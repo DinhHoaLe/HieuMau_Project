@@ -1,3 +1,5 @@
+from controller.NguoiHIenMau_Controller import DonorBloodController
+from controller.YeuCauMau_Controller import BloodRequestController
 from model.YeuCauMau_Model import BloodRequest
 from view.App_View import AppView
 
@@ -6,6 +8,12 @@ class AppController:
     def __init__(self, root):
         self.view = AppView(root, self)
         # self.load_blood_requests()
+
+
+        controller = DonorBloodController(root)
+        controller = BloodRequestController(root)
+
+
 
     # def load_blood_requests(self):
     #     # Lấy tất cả yêu cầu máu từ model
@@ -21,9 +29,7 @@ class AppController:
     #     # Cập nhật bảng kết quả tìm kiếm vào view
     #     self.view.update_request_table(requests)
 
-    def add_blood_request(self):
-        # Xử lý thêm yêu cầu máu (Có thể mở form nhập liệu mới)
-        pass
+
 
     # def delete_blood_request(self, request_id):
     #     # Xóa yêu cầu máu trong model
