@@ -50,10 +50,6 @@ class BloodRequestController:
         return None
 
     def update_request(self, request_id, request_data):
-        """Xử lý cập nhật thông tin người hiến máu từ View."""
-        print("📝 ID người hiến máu:", request_id)
-        print("📝 Dữ liệu nhận từ View:", request_data)
-
         # Xử lý và chuyển đổi ngày tháng nếu có
         for key in ["Ngày yêu cầu"]:
             if key in request_data and request_data[key]:
