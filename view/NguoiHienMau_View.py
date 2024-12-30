@@ -2,7 +2,6 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import datetime
 from tkcalendar import DateEntry
-
 from model.NguoiHienMau_Model import DonorModel
 
 
@@ -35,11 +34,13 @@ class DonorManagementView:
 
         self.search_entry = tk.Entry(search_frame, font=("Arial", 14), width=60)
         self.search_entry.grid(row=0, column=1, padx=10)
+        # Bind the Enter key press event to the search method
+        self.search_entry.bind('<Return>', self.search_donor)
 
         search_button = tk.Button(
             search_frame,
             text="Tìm kiếm",
-            command=lambda: self.controller.search_donor(self, self.search_entry.get()),
+            command=lambda: self.search_donor,
             font=("Arial", 12),
             bg="#D3D3D3",
             fg="black"
@@ -71,6 +72,18 @@ class DonorManagementView:
                     self.treeview.column(col, width=int(dynamic_width * 1.2))  # Ngày hiến chiếm thêm
                 else:
                     self.treeview.column(col, width=dynamic_width)
+
+    def search_donor(self,event=None):
+        # Check if event is None (button click), otherwise it's Enter key press
+        search_term = self.search_entry.get().strip()
+
+        if not search_term:
+            result = DonorModel.get_all_donor()
+        else:
+            result = DonorModel.search_requests_by_donors(search_term)  # Perform search with the term
+
+        # Call method to update the table or UI with results
+        self.update_donor_table(result)
 
     def update_donor_table(self, data):
         for row in self.treeview.get_children():
