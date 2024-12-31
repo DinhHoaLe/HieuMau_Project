@@ -1,7 +1,8 @@
-from model.Sql_Connection import DatabaseConnection
+from model.Sql_Connection_Hoa import DatabaseConnection
+
 
 class TongQuan_Model:
-    def __init__(self,):
+    def __init__(self, ):
         pass
 
     @staticmethod
@@ -11,7 +12,7 @@ class TongQuan_Model:
         Trả về tổng số máu trong kho, tổng số người hiến, và số yêu cầu chưa xử lý.
         """
         db = DatabaseConnection()  # Tạo đối tượng kết nối cơ sở dữ liệu
-
+        print(db)
         # Thống kê tổng số máu trong kho
         query_total_blood = """ SELECT SUM(Volume) FROM BloodInventory """
         result_total_blood = db.execute_query(query_total_blood)
@@ -26,8 +27,9 @@ class TongQuan_Model:
 
         db.close()
 
+        print(query_pending_requests)
         return {
-                "total_blood": result_total_blood[0][0] if result_total_blood else 0,
-                "total_donors": result_total_donors[0][0] if result_total_donors else 0,
-                "pending_requests": result_pending_requests[0][0] if result_pending_requests else 0
+            "total_blood": result_total_blood[0][0] if result_total_blood else 0,
+            "total_donors": result_total_donors[0][0] if result_total_donors else 0,
+            "pending_requests": result_pending_requests[0][0] if result_pending_requests else 0
         }

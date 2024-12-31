@@ -6,10 +6,10 @@ from view.TongQuan_View import StatisticalView
 
 class StatisticalController:
     def __init__(self, root):
-        # Khởi tạo view và truyền controller vào
-        self.view = StatisticalView(root, self)
+        self.root = root
+        self.view = None
 
-    def get_quick_stats(self):
+    def get_quick_stats_model(self):
         """Lấy các thống kê nhanh từ model."""
         return TongQuan_Model.get_quick_stats()
 

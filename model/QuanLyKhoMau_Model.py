@@ -1,4 +1,4 @@
-from model.Sql_Connection import DatabaseConnection
+from model.Sql_Connection_Hoa import DatabaseConnection
 
 class ImportInventory:
     def __init__(self, import_id=None, import_code=None, volume=None, import_date=None, source=None, blood_id=None):

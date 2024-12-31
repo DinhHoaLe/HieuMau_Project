@@ -1,7 +1,7 @@
 import tkinter as tk
 from PIL import Image, ImageTk  # Thêm thư viện Pillow
 from tkinter import messagebox
-
+import os
 from view.App_View import AppView
 from controller.Login_Controller import UserController
 
@@ -54,15 +54,15 @@ class LoginView:
         self.label_header.grid(row=0, column=0, columnspan=2, pady=0, sticky='nsew')
 
         # Thêm hình ảnh dưới header (sử dụng Pillow để tải ảnh JPG và thay đổi kích thước)
-        # img_path = r"C:\Users\Admin\Desktop\logo_icon.jpg"  # Đường dẫn đến hình ảnh
-        # img = Image.open(img_path)
+        img_path = os.path.join(os.path.dirname(__file__), "../view/IMG/logo_icon.jpg")
+        img = Image.open(img_path)
 
         # Thay đổi kích thước hình ảnh sao cho phù hợp (ví dụ: chiều rộng 200px, tự động điều chỉnh chiều cao)
-        # img_resized = img.resize((250, int(img.height * 250 / img.width)))
+        img_resized = img.resize((250, int(img.height * 250 / img.width)))
 
-        # self.img_login = ImageTk.PhotoImage(img_resized)  # Sử dụng ImageTk để chuyển đổi từ PIL Image sang PhotoImage
-        # self.label_image = tk.Label(self.frame, image=self.img_login, bg=background_color)
-        # self.label_image.grid(row=1, column=0, columnspan=2, pady=0)
+        self.img_login = ImageTk.PhotoImage(img_resized)  # Sử dụng ImageTk để chuyển đổi từ PIL Image sang PhotoImage
+        self.label_image = tk.Label(self.frame, image=self.img_login, bg=background_color)
+        self.label_image.grid(row=1, column=0, columnspan=2, pady=0)
 
         # Tạo label và entry cho tên người dùng
         self.label_username = tk.Label(self.frame, text="Tên người dùng:", font=self.label_font, anchor='w',
@@ -108,7 +108,6 @@ class LoginView:
         username = self.entry_username.get()
         password = self.entry_password.get()
 
-
         if self.controller.login(username, password):
 
             self.show_dashboard()  # Chuyển sang Dashboard
@@ -118,7 +117,7 @@ class LoginView:
 
     def show_dashboard(self):
         """Hiển thị giao diện Dashboard sau khi đăng nhập thành công"""
-        dashboard = AppView(self.root, self.controller)
+        AppView(self.root)
 
     def close(self):
         """Đóng kết nối cơ sở dữ liệu khi đóng giao diện."""

@@ -3,16 +3,18 @@ from tkinter import ttk
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
+
 class StatisticalView:
-    def __init__(self, root,controller):
+    def __init__(self, root, controller):
         self.root = root
         self.controller = controller
         self.frame = tk.Frame(self.root, bg="white")  # Frame chính của View
+        self.setup_quick_stats_section()
+        self.setup_chart_section()
 
     def create_statistical_frame(self):
         """Tạo giao diện chính của Dashboard."""
-        self.setup_quick_stats_section()
-        self.setup_chart_section()
+
         return self.frame
 
     def setup_quick_stats_section(self):
@@ -24,7 +26,7 @@ class StatisticalView:
         quick_stats_label.pack(pady=1)
 
         # Lấy thống kê từ controller
-        quick_stats = self.controller.get_quick_stats()
+        quick_stats = self.controller.get_quick_stats_model()
 
         stats = [
             ("Tổng số máu trong kho (ml)", quick_stats["total_blood"]),
@@ -62,7 +64,7 @@ class StatisticalView:
 
         # Tạo nhãn tiêu đề cho biểu đồ
         chart_label = tk.Label(chart_frame, text="Tồn kho theo nhóm máu", font=("Arial", 14, "bold"), bg="#ffffff")
-        chart_label.pack(padx=5,pady=5, anchor="center")
+        chart_label.pack(padx=5, pady=5, anchor="center")
 
         # Dữ liệu giả lập nhóm máu và tồn kho
         blood_groups = self.controller.get_blood_groups_stock()
@@ -71,7 +73,7 @@ class StatisticalView:
 
         # Vẽ biểu đồ cột (bar chart)
         fig, ax = plt.subplots(figsize=(6, 4))  # Tạo đối tượng figure và axes cho biểu đồ, thiết lập kích thước
-        ax.bar(labels, values, color='#007BFF')  # Vẽ các cột với màu xanh dương
+        # ax.bar(labels, values, color='#007BFF')  # Vẽ các cột với màu xanh dương
         ax.set_xlabel('Nhóm máu')  # Đặt nhãn trục X
         ax.set_ylabel('Tồn kho (ml)')  # Đặt nhãn trục Y
         plt.tight_layout()
@@ -80,4 +82,3 @@ class StatisticalView:
         canvas = FigureCanvasTkAgg(fig, master=chart_frame)  # Tạo đối tượng canvas để hiển thị biểu đồ
         canvas.get_tk_widget().pack(pady=10, expand=True)  # Sử dụng pack để đặt canvas vào frame biểu đồ
         canvas.draw()  # Vẽ biểu đồ trên canvas
-

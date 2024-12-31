@@ -1,19 +1,21 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 
+from controller.KhoMau_Controller import BloodInventoryController
 from controller.YeuCauMau_Controller import BloodRequestController
 from view.BenhNhan_View import StatisticsView
 from view.KhoMau_View import BloodStorageView
 from view.NguoiHienMau_View import DonorManagementView
 from view.TongQuan_View import StatisticalView
 from view.YeuCauMau_View import BloodRequestManagementView
-
 from controller.NguoiHIenMau_Controller import DonorBloodController
+from controller.TongQuan_Controller import StatisticalController
+
 
 class AppView:
-    def __init__(self, root, controller):
+    def __init__(self, root):
         self.root = root
-        self.controller = controller
+        # self.controller = controller
         self.root.title("Quản lý ngân hàng máu")
 
         self.root.state('zoomed')
@@ -25,16 +27,18 @@ class AppView:
 
         # Frames cho từng giao diện
         self.frames = {
-            "Tổng quan": StatisticalView(self.root).create_statistical_frame(),
+            "Tổng quan": StatisticalView(self.root, StatisticalController(self.root)).create_statistical_frame(),
             "Quản lý người hiến máu": DonorManagementView(self.root, DonorBloodController).create_frame(),
-            "Quản lý kho máu": BloodStorageView(self.root).create_blood_storage_frame(),
-            "Quản lý yêu cầu máu": BloodRequestManagementView(self.root, BloodRequestController).create_request_management_frame(),
+            "Quản lý kho máu": BloodStorageView(self.root,
+                                                BloodInventoryController(self.root)).create_blood_storage_frame(),
+            "Quản lý yêu cầu máu": BloodRequestManagementView(self.root,
+                                                              BloodRequestController).create_request_management_frame(),
             "Quản lý bệnh nhân": StatisticsView(self.root).create_statistics_frame(),
         }
 
         # Hiển thị frame mặc định
-        self.active_tab = None  # Theo dõi tab hiện tại
-        self.current_frame = None  # Frame hiện tại
+        self.active_tab = None
+        self.current_frame = None
         self.show_frame("Quản lý yêu cầu máu")
 
     def setup_header(self):
@@ -85,7 +89,6 @@ class AppView:
             button.config(bg="#FFA07A")  # Màu cam nhạt khi hover
 
     def on_leave(self, button, text):
-        """Hiệu ứng khi chuột rời khỏi nút."""
         if text == self.active_tab:
             button.config(bg="#FFDD57")  # Màu active
         else:
