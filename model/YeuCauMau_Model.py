@@ -18,7 +18,27 @@ class BloodRequest:
     @staticmethod
     def get_all_requests():
         db = DatabaseConnection()
-        query = "SELECT * FROM Requests"
+        # query = "SELECT * FROM Requests"
+        query = """
+               SELECT 
+                   RQ.RequestID,
+                   PT.PatientID, 
+                   PT.FullName, 
+                   RQ.BloodType, 
+                   RQ.RhFactor, 
+                   RQ.VolumeRequested, 
+                   RQ.RequestingDepartment, 
+                   RQ.RequestDate, 
+                   RQ.Status, 
+                   RQ.Notes
+               FROM 
+                   REQUESTS RQ
+               JOIN 
+                   PATIENTS PT 
+               ON 
+                   RQ.PatientID = PT.PatientID
+               """
+
         result = db.execute_query(query)
         db.close()
         return result
@@ -111,3 +131,42 @@ class BloodRequest:
         db.execute_query(query, (request_id,))
         db.commit()
         db.close()
+
+    @staticmethod
+    def search_requests_by_patient(search_term):
+        """Tìm kiếm thông tin yêu cầu hiến máu theo mã bệnh nhân hoặc tên bệnh nhân."""
+        db = DatabaseConnection()
+        query = """
+                SELECT 
+                   RQ.RequestID,
+                   PT.PatientID, 
+                   PT.FullName, 
+                   RQ.BloodType, 
+                   RQ.RhFactor, 
+                   RQ.VolumeRequested, 
+                   RQ.RequestingDepartment, 
+                   RQ.RequestDate, 
+                   RQ.Status, 
+                   RQ.Notes
+               FROM 
+                   REQUESTS RQ
+               JOIN 
+                   PATIENTS PT 
+               ON 
+                   RQ.PatientID = PT.PatientID
+                WHERE pt.PatientID LIKE ? OR pt.FullName LIKE ?
+                """
+        try:
+            result = db.execute_query(query, ('%' + search_term + '%', '%' + search_term + '%'))
+
+            # Thông báo tìm thấy kết quả
+            print("✅ Thông tin yêu cầu hiến máu được tìm thấy")
+
+            return result
+        except Exception as e:
+            print(f"❌ Lỗi tìm kiếm thông tin yêu cầu hiến máu: {e}")
+            raise e
+        finally:
+            db.close()  # Đảm bảo đóng kết nối sau khi truy vấn xong
+
+

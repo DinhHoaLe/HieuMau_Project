@@ -1,3 +1,4 @@
+from model import NguoiHienMau_Model
 from model.NguoiHienMau_Model import DonorModel
 from view.NguoiHienMau_View import DonorManagementView
 from datetime import datetime
@@ -48,10 +49,6 @@ class DonorBloodController:
         except Exception as e:
             print(f"❌ Lỗi khi cập nhật thông tin: {e}")
             messagebox.showerror("Lỗi", f"Không thể cập nhật thông tin: {e}")
-
-    def search_donor(self, search_term):
-        requests = DonorModel.search_donor_by_id(search_term)
-        self.view.update_donor_table(requests)
 
     def add_donor(self, donor_data):
         if donor_data:

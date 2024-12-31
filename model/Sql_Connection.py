@@ -7,6 +7,7 @@ database = 'BloodBank_db'
 username = 'sa'
 password = '1'
 
+
 # Chuỗi kết nối
 str_sql = 'DRIVER={0};SERVER={1};DATABASE={2};UID={3};PWD={4}'.format(drive, server, database, username, password)
 

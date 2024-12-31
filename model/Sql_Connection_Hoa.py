@@ -1,11 +1,14 @@
 import pyodbc
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
 # Thông tin kết nối
-drive = 'ODBC Driver 17 for SQL Server'
-server = 'ADMINISTRATOR\\DINHHOA'
-database = 'BloodBank_db'
-username = 'sa'
-password = '19001560Hoa.'
+drive = os.getenv('SQL_SERVER_DRIVER')
+server = os.getenv('SQL_SERVER')
+database = os.getenv('SQL_DATABASE')
+username = os.getenv('SQL_USERNAME')
+password = os.getenv('SQL_PASSWORD')
 
 # Chuỗi kết nối
 str_sql = 'DRIVER={0};SERVER={1};DATABASE={2};UID={3};PWD={4}'.format(drive, server, database, username, password)

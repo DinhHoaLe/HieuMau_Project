@@ -128,3 +128,32 @@ class DonorModel:
         result = db.execute_query(query, (donor_id,))
         db.close()
         return result
+
+    @staticmethod
+    def search_requests_by_donors(search_term):
+        """Tìm kiếm thông tin yêu cầu hiến máu theo mã người hiến hoặc tên người hiến."""
+        db = DatabaseConnection()
+        query = """
+                    SELECT * FROM DONORS
+                    WHERE DonorID LIKE ? OR FullName LIKE ?
+                    """
+        try:
+            result = db.execute_query(query, ('%' + search_term + '%', '%' + search_term + '%'))
+
+            # Thông báo tìm thấy kết quả
+            print("✅ Thông tin người hiến máu được tìm thấy")
+
+            return result
+        except Exception as e:
+            print(f"❌ Lỗi tìm kiếm thông tin người hiến máu: {e}")
+            raise e
+        finally:
+            db.close()
+
+    @staticmethod
+    def view_history(donor_id):
+        db = DatabaseConnection()
+        query = "SELECT RecordID, RecordCode, DonationDate, VolumeDonated FROM DonationRecords WHERE DonorID = ?"
+        result = db.execute_query(query, (donor_id,))
+        db.close()
+        return result

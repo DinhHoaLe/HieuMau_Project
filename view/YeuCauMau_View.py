@@ -5,16 +5,16 @@ from tkcalendar import DateEntry
 
 from model.YeuCauMau_Model import BloodRequest
 
-
 class BloodRequestManagementView:
     def __init__(self, root, controller):
         self.root = root
         self.controller = controller
-        self.frame = tk.Frame(self.root, bg="white")  # Tạo Frame chính cho giao diện
-
+        self.frame = tk.Frame(self.root, bg="white")
         self.setup_search_section()
         self.setup_request_table()
         self.load_blood_requests()
+        self.setup_action_buttons()
+        # self.treeview.bind("<Configure>", self.adjust_column_width)
 
         # self.treeview.bind("<Configure>", self.adjust_column_width)
 
@@ -38,27 +38,40 @@ class BloodRequestManagementView:
         # Entry Ô nhập tìm kiếm
         self.search_entry = tk.Entry(search_frame, font=("Arial", 14), width=60)
         self.search_entry.grid(row=0, column=1, padx=10)
+        # Bind the Enter key press event to the search method
+        self.search_entry.bind('<Return>', self.search_blood_requests)
 
         # Button Nút tìm kiếm
         search_button = tk.Button(
             search_frame,
             text="Tìm kiếm",
-            command=self.search_blood_requests,
+            command=self.search_blood_requests,  # Gọi phương thức tìm kiếm trong controller
             font=("Arial", 12),
             bg="#D3D3D3",
             fg="black"
         )
         search_button.grid(row=0, column=2, padx=10)
 
-        add_button = tk.Button(
-            search_frame,
-            text="Thêm",
-            command=self.show_add_modal,
-            font=("Arial", 12),
-            bg="#D3D3D3",
-            fg="black"
-        )
-        add_button.grid(row=0, column=3, padx=10)
+    def update_request_table_for_search(self, requests):
+        for row in self.treeview.get_children():
+            self.treeview.delete(row)  # Xóa tất cả các dòng hiện tại trong bảng
+
+        # Thêm các yêu cầu máu tìm được vào bảng
+        for request in requests:
+            formatted_row = (
+                request[0],  # Mã yêu cầu máu
+                request[1],  # Mã bệnh nhân
+                request[2],  # Tên bệnh nhân
+                request[3],  # Khoa yêu cầu
+                request[4],  # Nhóm máu
+                request[5],  # Yếu tố Rh
+                request[6],  # Lượng máu
+                request[7],  # Ngày yêu cầu
+                request[8],  # Trạng thái
+                request[9],  # Ghi chú
+                "Xử lý"  # Dữ liệu cho Action
+            )
+            self.treeview.insert("", "end", values=formatted_row)  # Thêm dòng vào bảng
 
     def setup_request_table(self):
         """Thiết lập bảng dữ liệu"""
@@ -66,13 +79,13 @@ class BloodRequestManagementView:
         self.table_frame.pack(pady=20, fill="both", expand=True)
 
         columns = (
-            "Mã định danh",
             "Mã yêu cầu máu",
             "Mã bệnh nhân",
-            "Khoa yêu cầu",
+            "Tên bệnh nhân",
             "Nhóm máu",
             "Yếu tố Rh",
             "Lượng máu",
+            "Khoa yêu cầu",
             "Ngày yêu cầu",
             "Trạng thái",
             "Ghi chú",
@@ -144,7 +157,7 @@ class BloodRequestManagementView:
                     action_menu = tk.Menu(self.root, tearoff=0)
                     action_menu.add_command(label="Edit", command=lambda: self.show_edit_modal(request_id))
                     action_menu.add_command(label="Delete",
-                                            command=lambda: self.controller.delete_request_by_id(self, request_id))
+                                            command=lambda: self.show_confirm_delete())
                     action_menu.post(event.x_root, event.y_root)
 
     def load_blood_requests(self):
@@ -158,23 +171,31 @@ class BloodRequestManagementView:
         for request in data:
             # Chuyển datetime.date thành chuỗi
             formatted_row = (
-                request[0],  # ID
-                request[1],  # Mã Nhà Tài Trợ
-                request[2],  # Tên Nhà Tài Trợ
-                request[3],
-                request[4],  # Giới Tính
-                request[5],  # Nhóm Máu
-                request[6],  # Rh
+                request[0],  # Mã yêu cầu
+                request[1],  # Mã bệnh nhân
+                request[2],  # Tên bệnh nhân
+                request[3],    # Nhóm máu
+                request[4],  # Yếu tố Rh
+                request[5],  # Lượng máu
+                request[6],  # Khoa Yêu Cầu
                 request[7].strftime('%Y-%m-%d') if isinstance(request[7], datetime.date) else request[7],
-                request[8],  # Số Điện Thoại
-                request[9],  # Địa Chỉ
+                request[8],  # Trạng thái
+                request[9],  # Ghi chú
                 "Xử lý"  # Dữ liệu cho Action
             )
             self.treeview.insert("", "end", values=formatted_row)
 
-    def search_blood_requests(self):
-        search_term = self.search_entry.get()
-        messagebox.showinfo("Tìm kiếm", f"Tìm kiếm người hiến máu với từ khóa: {search_term}")
+    def search_blood_requests(self, event=None):
+        # Check if event is None (button click), otherwise it's Enter key press
+        search_term = self.search_entry.get().strip()
+
+        if not search_term:
+            result = BloodRequest.get_all_requests()
+        else:
+            result = BloodRequest.search_requests_by_patient(search_term)  # Perform search with the term
+
+        # Call method to update the table or UI with results
+        self.update_request_table(result)
 
     def show_add_modal(self):
         # Tạo cửa sổ modal
@@ -189,12 +210,14 @@ class BloodRequestManagementView:
 
         fields = [
             ("Mã bệnh nhân", "select_patientId"),
+            # ("Tên bệnh nhân","select_fullname"),
             ("Khoa yêu cầu", "select_RequestingDepartment"),
             ("Nhóm máu", "select_blood"),
             ("Yếu tố Rh", "text"),
             ("Lượng máu", "text"),
             ("Ngày yêu cầu", "date"),
-            ("Trạng thái", "select_status"),
+            # ("Trạng thái", "select_status"),
+            ("Trạng thái", "status_disable"),
             ("Ghi chú", "text")
         ]
 
@@ -239,8 +262,6 @@ class BloodRequestManagementView:
                 entry.config(width=40)
                 self.entries[field_name] = gender_var
 
-
-
             elif field_type == "select_patientId":
 
                 gender_var = tk.StringVar()
@@ -267,18 +288,25 @@ class BloodRequestManagementView:
                 entry.config(width=40)
                 self.entries[field_name] = blood_var
 
-            elif field_type == "select_status":
-                blood_var = tk.StringVar()
-                blood_var.set("Chọn trạng thái")  # Giá trị mặc định
+            # elif field_type == "select_status":
+            #     blood_var = tk.StringVar()
+            #     blood_var.set("Chọn trạng thái")  # Giá trị mặc định
+            #
+            #     entry = ttk.OptionMenu(form_frame, blood_var, "Chọn trạng thái", "Chờ xử lý", "Đã hoàn thành",
+            #                            "Đã từ chối")
+            #     entry.grid(row=i, column=1, pady=5, padx=10, sticky="w")
+            #
+            #     entry_frame = tk.Frame(form_frame)
+            #     entry_frame.grid(row=i, column=1, pady=5, padx=10, sticky="w")
+            #     entry.config(width=40)
+            #     self.entries[field_name] = blood_var
 
-                entry = ttk.OptionMenu(form_frame, blood_var, "Chọn trạng thái", "Chờ xử lý", "Đã hoàn thành",
-                                       "Đã từ chối")
-                entry.grid(row=i, column=1, pady=5, padx=10, sticky="w")
-
-                entry_frame = tk.Frame(form_frame)
-                entry_frame.grid(row=i, column=1, pady=5, padx=10, sticky="w")
-                entry.config(width=40)
-                self.entries[field_name] = blood_var
+            elif field_type == "status_disable":
+                entry = tk.Entry(form_frame, font=("Arial", 12), width=30)
+                entry.insert(0, "Chờ xử lý")  # Insert the text "Chờ xử lý"
+                entry.config(state="disabled")  # Disable the entry widget to prevent editing
+                entry.grid(row=i, column=1, pady=5, padx=10)
+                self.entries[field_name] = entry
 
         # Frame chứa nút bấm
         button_frame = tk.Frame(modal, padx=10, pady=10)
@@ -315,6 +343,42 @@ class BloodRequestManagementView:
             else:  # Dùng với Entry hoặc DateEntry
                 request_data[field] = widget.get()
         return request_data
+
+    # def show_edit_modal(self, request_id):
+    #     if request_id is None:
+    #         messagebox.showerror("Lỗi", "Không tìm thấy ID yêu cầu hiến máu.")
+    #         return
+
+    def show_confirm_delete(self):
+        """Hiển thị hộp thoại xác nhận xóa."""
+        selected_item = self.treeview.selection()  # Lấy dòng được chọn
+
+        if not selected_item:
+            messagebox.showwarning("Không có dòng được chọn", "Vui lòng chọn dòng để xóa.")
+            return
+
+        confirm = messagebox.askyesno("Xác nhận xóa", "Bạn có chắc muốn xóa yêu cầu này?")
+        if confirm:
+            # Xóa dòng được chọn
+            self.treeview.delete(selected_item)
+            messagebox.showinfo("Thông báo", "Dòng đã bị xóa.")
+        else:
+            print("Yêu cầu không bị xóa.")
+
+    def edit_request(self):
+        """Xử lý sự kiện nút Sửa."""
+        # Lấy dòng được chọn từ Treeview
+        selected_item = self.treeview.selection()
+
+        if not selected_item:
+            messagebox.showwarning("Lỗi", "Vui lòng chọn một yêu cầu để chỉnh sửa.")
+            return
+
+        # Lấy mã yêu cầu (request_id) từ dòng được chọn
+        request_id = self.treeview.item(selected_item[0], "values")[0]
+
+        # Mở cửa sổ chỉnh sửa với request_id
+        self.show_edit_modal(request_id)
 
     def show_edit_modal(self, request_id=None):
         if request_id is None:
@@ -438,3 +502,33 @@ class BloodRequestManagementView:
             edited_data[key] = entry.get()
         print("✅ Dữ liệu chỉnh sửa:", edited_data)
         return edited_data
+
+    def setup_action_buttons(self):
+
+        if hasattr(self, 'add_button'):  # Check if button is already created
+            return  # Do not create again
+
+        # Create a frame to hold the buttons and center them
+        button_frame = tk.Frame(self.frame)
+        button_frame.pack(anchor='center')
+
+        # Create the buttons
+        self.add_button = tk.Button(button_frame, text="Thêm yêu cầu", command=self.show_add_modal, font=("Arial", 12),
+                                    bg="#4CAF50", fg="white")
+        self.edit_button = tk.Button(button_frame, text="Sửa yêu cầu", command=self.edit_request, font=("Arial", 12),
+                                     bg="#FFA500", fg="white")
+        self.delete_button = tk.Button(button_frame, text="Xóa yêu cầu", command=self.show_confirm_delete,
+                                       font=("Arial", 12), bg="#FF6347", fg="white")
+
+        # Pack the buttons on the same row with a 20px gap between them
+        self.add_button.pack(side="left", padx=10)
+        self.edit_button.pack(side="left", padx=10)
+        self.delete_button.pack(side="left", padx=10)
+
+
+
+
+
+
+
+
