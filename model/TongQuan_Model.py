@@ -27,7 +27,9 @@ class TongQuan_Model:
 
         db.close()
 
-        print(query_pending_requests)
+        print(result_total_blood)
+        print(result_total_donors)
+        print(result_pending_requests)
         return {
             "total_blood": result_total_blood[0][0] if result_total_blood else 0,
             "total_donors": result_total_donors[0][0] if result_total_donors else 0,

@@ -126,6 +126,7 @@ class BloodRequest:
 
     @staticmethod
     def delete_request(request_id):
+        print(request_id)
         db = DatabaseConnection()
         query = "DELETE FROM Requests WHERE RequestID = ?"
         db.execute_query(query, (request_id,))

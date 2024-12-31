@@ -13,7 +13,6 @@ class BloodRequestManagementView:
         self.setup_search_section()
         self.setup_request_table()
         self.load_blood_requests()
-        self.setup_action_buttons()
         # self.treeview.bind("<Configure>", self.adjust_column_width)
 
         # self.treeview.bind("<Configure>", self.adjust_column_width)
@@ -52,6 +51,17 @@ class BloodRequestManagementView:
         )
         search_button.grid(row=0, column=2, padx=10)
 
+        add_button = tk.Button(
+            search_frame,
+            text="Thêm",
+            command=self.show_add_modal,
+            font=("Arial", 12),
+            bg="#D3D3D3",
+            fg="black"
+        )
+        add_button.grid(row=0, column=3, padx=10)
+
+
     def update_request_table_for_search(self, requests):
         for row in self.treeview.get_children():
             self.treeview.delete(row)  # Xóa tất cả các dòng hiện tại trong bảng
@@ -89,7 +99,7 @@ class BloodRequestManagementView:
             "Ngày yêu cầu",
             "Trạng thái",
             "Ghi chú",
-            "Action"
+            "Xử lí"
         )
 
         style = ttk.Style()
@@ -157,7 +167,7 @@ class BloodRequestManagementView:
                     action_menu = tk.Menu(self.root, tearoff=0)
                     action_menu.add_command(label="Edit", command=lambda: self.show_edit_modal(request_id))
                     action_menu.add_command(label="Delete",
-                                            command=lambda: self.show_confirm_delete())
+                                            command=lambda: self.show_confirm_delete(request_id))
                     action_menu.post(event.x_root, event.y_root)
 
     def load_blood_requests(self):
@@ -349,18 +359,23 @@ class BloodRequestManagementView:
     #         messagebox.showerror("Lỗi", "Không tìm thấy ID yêu cầu hiến máu.")
     #         return
 
-    def show_confirm_delete(self):
+    def show_confirm_delete(self, request_id):
         """Hiển thị hộp thoại xác nhận xóa."""
-        selected_item = self.treeview.selection()  # Lấy dòng được chọn
+        print(request_id)
+        # selected_item = self.treeview.selection()  # Lấy dòng được chọn
 
-        if not selected_item:
+        if not request_id:
             messagebox.showwarning("Không có dòng được chọn", "Vui lòng chọn dòng để xóa.")
             return
 
         confirm = messagebox.askyesno("Xác nhận xóa", "Bạn có chắc muốn xóa yêu cầu này?")
         if confirm:
             # Xóa dòng được chọn
-            self.treeview.delete(selected_item)
+            print("Selected Item:", request_id)
+            print("Type of Selected Item:", type(request_id))
+
+            self.controller.delete_request_by_id(self,request_id)
+            # self.treeview.delete(selected_item)
             messagebox.showinfo("Thông báo", "Dòng đã bị xóa.")
         else:
             print("Yêu cầu không bị xóa.")
@@ -503,27 +518,6 @@ class BloodRequestManagementView:
         print("✅ Dữ liệu chỉnh sửa:", edited_data)
         return edited_data
 
-    def setup_action_buttons(self):
-
-        if hasattr(self, 'add_button'):  # Check if button is already created
-            return  # Do not create again
-
-        # Create a frame to hold the buttons and center them
-        button_frame = tk.Frame(self.frame)
-        button_frame.pack(anchor='center')
-
-        # Create the buttons
-        self.add_button = tk.Button(button_frame, text="Thêm yêu cầu", command=self.show_add_modal, font=("Arial", 12),
-                                    bg="#4CAF50", fg="white")
-        self.edit_button = tk.Button(button_frame, text="Sửa yêu cầu", command=self.edit_request, font=("Arial", 12),
-                                     bg="#FFA500", fg="white")
-        self.delete_button = tk.Button(button_frame, text="Xóa yêu cầu", command=self.show_confirm_delete,
-                                       font=("Arial", 12), bg="#FF6347", fg="white")
-
-        # Pack the buttons on the same row with a 20px gap between them
-        self.add_button.pack(side="left", padx=10)
-        self.edit_button.pack(side="left", padx=10)
-        self.delete_button.pack(side="left", padx=10)
 
 
 

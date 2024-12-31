@@ -27,7 +27,6 @@ class StatisticalView:
 
         # Lấy thống kê từ controller
         quick_stats = self.controller.get_quick_stats_model()
-
         stats = [
             ("Tổng số máu trong kho (ml)", quick_stats["total_blood"]),
             ("Tổng số người hiến", quick_stats["total_donors"]),
@@ -73,7 +72,7 @@ class StatisticalView:
 
         # Vẽ biểu đồ cột (bar chart)
         fig, ax = plt.subplots(figsize=(6, 4))  # Tạo đối tượng figure và axes cho biểu đồ, thiết lập kích thước
-        # ax.bar(labels, values, color='#007BFF')  # Vẽ các cột với màu xanh dương
+        ax.bar(labels, values, color='#007BFF')  # Vẽ các cột với màu xanh dương
         ax.set_xlabel('Nhóm máu')  # Đặt nhãn trục X
         ax.set_ylabel('Tồn kho (ml)')  # Đặt nhãn trục Y
         plt.tight_layout()

@@ -48,8 +48,6 @@ class BloodRequestController:
 
     def update_request(self, request_id, request_data):
         """Xử lý cập nhật thông tin người hiến máu từ View."""
-        print("📝 ID người hiến máu:", request_id)
-        print("📝 Dữ liệu nhận từ View:", request_data)
 
         # Xử lý và chuyển đổi ngày tháng nếu có
         for key in ["Ngày yêu cầu"]:
@@ -69,10 +67,8 @@ class BloodRequestController:
             messagebox.showerror("Lỗi", f"Không thể cập nhật thông tin: {e}")
 
     def delete_request_by_id(self, request_id):
-        # Xóa yêu cầu máu trong model
+        print(request_id)
         BloodRequest.delete_request(request_id)
         # Cập nhật lại bảng sau khi xóa
         messagebox.showinfo("Thành công", "Xóa yêu cầu hiến máu thành công!")
         self.load_blood_requests()  # Tải lại danh sách yêu cầu máu sau khi xóa
-
-
