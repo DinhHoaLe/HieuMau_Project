@@ -1,4 +1,5 @@
 from model.Sql_Connection_Hoa import DatabaseConnection
+from model.NguoiHienMau_Model import DonorModel
 
 class ImportInventory:
     def __init__(self, import_id=None, import_code=None, volume=None, import_date=None, source=None, blood_id=None):
@@ -78,18 +79,20 @@ class ImportInventory:
             SELECT a.ImportCode, b.BloodType, b.RhFactor, a.Volume, a.ImportDate, a.Source
             FROM ImportInventory a
             JOIN BloodInventory b ON a.BloodId = b.BloodId
+            ORDER BY a.ImportCode DESC  -- Sắp xếp theo ImportCode giảm dần (lớn đến nhỏ)
         """
 
         db = DatabaseConnection()
         result = db.execute_query(query)
         db.close()
+
         # Kiểm tra kết quả trả về và tạo danh sách đối tượng ImportInventory
         list_load_blood_entry_info = []
         if result:
             for import_code, blood_type, rh_factor, volume, import_date, source in result:
                 # Tạo đối tượng ImportInventory với các thuộc tính cần thiết
                 entry = ImportInventory(import_code=import_code,
-                                        volume= volume,
+                                        volume=volume,
                                         import_date=import_date,
                                         source=source)
                 # Thêm các thuộc tính từ BloodInventory vào đối tượng
@@ -99,7 +102,9 @@ class ImportInventory:
         else:
             return None  # Trả về None nếu không có dữ liệu
 
-        return list_load_blood_entry_info
+        return list_load_blood_entry_info  # Trả về danh sách đã sắp xếp
+
+
 class BloodInventory:
     def __init__(self, blood_id=None, blood_type=None, rh_factor=None, volume=None):
         self.blood_id = blood_id
@@ -203,6 +208,56 @@ class BloodInventory:
         db.execute_query(query_update, (new_volume, blood_id))
         db.commit()  # Lưu thay đổi vào cơ sở dữ liệu
         db.close()
+
+    @staticmethod
+    @staticmethod
+    def update_blood_volume_by_type(blood_type, rh_factor, volume_change):
+        """
+        Cập nhật số lượng máu trong kho dựa trên BloodType và RhFactor.
+        Có thể cộng hoặc trừ lượng máu.
+
+        :param blood_type: Loại máu (A, B, AB, O).
+        :param rh_factor: RhFactor (+ hoặc -).
+        :param volume_change: Số lượng máu thay đổi (ml, có thể âm hoặc dương).
+        """
+        db = DatabaseConnection()
+
+        # Kiểm tra tồn tại của BloodType và RhFactor
+        query_check = """
+            SELECT Volume 
+            FROM BloodInventory
+            WHERE BloodType = ? AND RhFactor = ?
+        """
+        result = db.execute_query(query_check, (blood_type, rh_factor))
+
+        # Lấy dòng đầu tiên từ kết quả trả về
+        if result and len(result) > 0:
+            current_volume = int(result[0][0])
+        else:
+            db.close()
+            raise ValueError(f"Không tìm thấy máu với BloodType: {blood_type}, RhFactor: {rh_factor} trong kho.")
+
+        # Tính toán volume mới
+        volume_change = int(volume_change)
+        new_volume = current_volume + volume_change
+
+        # Đảm bảo volume không âm
+        if new_volume < 0:
+            db.close()
+            raise ValueError(f"Lượng máu không đủ để cập nhật (BloodType: {blood_type}, RhFactor: {rh_factor}).")
+
+        # Cập nhật lượng máu mới
+        query_update = """
+            UPDATE BloodInventory
+            SET Volume = ?
+            WHERE BloodType = ? AND RhFactor = ?
+        """
+        db.execute_query(query_update, (new_volume, blood_type, rh_factor))
+        db.commit()  # Lưu thay đổi vào cơ sở dữ liệu
+        db.close()
+
+        print(f"Đã cập nhật kho máu: BloodType: {blood_type}, RhFactor: {rh_factor}, Volume: {new_volume}ml.")
+
 class DonationRecords:
     def __init__(self, record_id=None, record_code=None, donation_id=None, import_code=None,donation_date=None, volume_donated=None):
         self.record_id = record_id

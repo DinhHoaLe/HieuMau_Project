@@ -162,13 +162,26 @@ class BloodRequestManagementView:
                 item = self.treeview.item(row_id)
                 values = item.get('values')
                 if values:
-                    request_id = values[0]  # Lấy giá trị Mã định danh (ID) từ cột đầu tiên
-                    # Hiển thị menu
-                    action_menu = tk.Menu(self.root, tearoff=0)
-                    action_menu.add_command(label="Edit", command=lambda: self.show_edit_modal(request_id))
-                    action_menu.add_command(label="Delete",
-                                            command=lambda: self.show_confirm_delete(request_id))
-                    action_menu.post(event.x_root, event.y_root)
+                    request_code = values[0]  # Lấy giá trị Mã định danh (ID) từ cột đầu tiên
+                    blood_type = values[3]
+                    rh_factor = values[4]
+                    volume  = values[5]
+                    request_status = values[8]
+                    if request_status != "Chờ xử lý":
+                        # Hiển thị thông báo nếu trạng thái không phải "Chờ xử lý"
+                        tk.messagebox.showwarning(
+                            "Hành động không hợp lệ",
+                            "Không được sửa hoặc xóa yêu cầu khác trạng thái 'Chờ xử lý'."
+                        )
+                    else:
+                        # Hiển thị menu nếu trạng thái là "Chờ xử lý"
+                        action_menu = tk.Menu(self.root, tearoff=0)
+                        action_menu.add_command(label="Sửa", command=lambda: self.show_edit_modal(request_code))
+                        action_menu.add_command(label="Xóa",
+                                                command=lambda: self.show_confirm_delete(request_code))
+                        action_menu.add_command(label="Xác nhận",
+                                                command=lambda: self.show_confirm_complete(request_code,blood_type,rh_factor,volume))
+                        action_menu.post(event.x_root, event.y_root)
 
     def load_blood_requests(self):
         requests = BloodRequest.get_all_requests()
@@ -359,26 +372,41 @@ class BloodRequestManagementView:
     #         messagebox.showerror("Lỗi", "Không tìm thấy ID yêu cầu hiến máu.")
     #         return
 
-    def show_confirm_delete(self, request_id):
+    def show_confirm_delete(self, request_code):
         """Hiển thị hộp thoại xác nhận xóa."""
-        print(request_id)
+        print(request_code)
         # selected_item = self.treeview.selection()  # Lấy dòng được chọn
 
-        if not request_id:
+        if not request_code:
             messagebox.showwarning("Không có dòng được chọn", "Vui lòng chọn dòng để xóa.")
             return
 
         confirm = messagebox.askyesno("Xác nhận xóa", "Bạn có chắc muốn xóa yêu cầu này?")
         if confirm:
             # Xóa dòng được chọn
-            print("Selected Item:", request_id)
-            print("Type of Selected Item:", type(request_id))
+            print("Selected Item:", request_code)
+            print("Type of Selected Item:", type(request_code))
 
-            self.controller.delete_request_by_id(self,request_id)
+            self.controller.delete_request_by_id(self,request_code)
             # self.treeview.delete(selected_item)
             messagebox.showinfo("Thông báo", "Dòng đã bị xóa.")
         else:
             print("Yêu cầu không bị xóa.")
+
+    def show_confirm_complete(self, request_code, blood_type,rh_factor,volume):
+        """Hiển thị hộp thoại xác nhận hoàn thành."""
+        print(request_code)
+
+        if not request_code:
+            messagebox.showwarning("Không có dòng được chọn", "Vui lòng chọn dòng để hoàn thành.")
+            return
+
+        confirm = messagebox.askyesno("Xác nhận hoàn thành", "Bạn có chắc muốn đánh dấu yêu cầu này là hoàn thành?")
+        if confirm:
+            # Thực hiện đánh dấu hoàn thành yêu cầu
+            self.controller.confirm_request_by_id(self,request_code,blood_type,rh_factor,volume)
+
+
 
     def edit_request(self):
         """Xử lý sự kiện nút Sửa."""
@@ -389,14 +417,14 @@ class BloodRequestManagementView:
             messagebox.showwarning("Lỗi", "Vui lòng chọn một yêu cầu để chỉnh sửa.")
             return
 
-        # Lấy mã yêu cầu (request_id) từ dòng được chọn
-        request_id = self.treeview.item(selected_item[0], "values")[0]
+        # Lấy mã yêu cầu (request_code) từ dòng được chọn
+        request_code = self.treeview.item(selected_item[0], "values")[0]
 
-        # Mở cửa sổ chỉnh sửa với request_id
-        self.show_edit_modal(request_id)
+        # Mở cửa sổ chỉnh sửa với request_code
+        self.show_edit_modal(request_code)
 
-    def show_edit_modal(self, request_id=None):
-        if request_id is None:
+    def show_edit_modal(self, request_code=None):
+        if request_code is None:
             messagebox.showerror("Lỗi", "Không tìm thấy ID yêu cầu hiến máu.")
             return
 
@@ -426,11 +454,11 @@ class BloodRequestManagementView:
         self.edit_entries = {}
 
         # Lấy dữ liệu từ Controller
-        request_data = self.controller.get_info_request(request_id)
+        request_data = self.controller.get_info_request(request_code)
         print("📝 Dữ liệu yêu cầu:", request_data)
 
         if not request_data:
-            messagebox.showerror("Lỗi", f"Không tìm thấy thông tin yêu cầu với ID {request_id}.")
+            messagebox.showerror("Lỗi", f"Không tìm thấy thông tin yêu cầu với ID {request_code}.")
             modal.destroy()
             return
 
@@ -485,6 +513,7 @@ class BloodRequestManagementView:
                                        "Chờ xử lý", "Đã hoàn thành", "Đã từ chối")
                 entry.grid(row=i, column=1, pady=5, padx=10, sticky="w")
                 entry.config(width=30)
+                entry["state"] = "disabled"  # Vô hiệu hóa không cho chọn
                 self.edit_entries[field_name] = status_var
 
         button_frame = tk.Frame(form_frame)
@@ -496,7 +525,7 @@ class BloodRequestManagementView:
             font=("Arial", 12),
             bg="#4CAF50",
             fg="white",
-            command=lambda: self.controller.update_request(self, request_id, self.get_edited_data())
+            command=lambda: self.controller.update_request(self, request_code, self.get_edited_data())
         )
         save_button.pack(side="left", padx=10)
 

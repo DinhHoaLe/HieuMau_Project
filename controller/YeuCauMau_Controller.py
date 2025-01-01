@@ -1,4 +1,6 @@
 from model.YeuCauMau_Model import BloodRequest
+from model.QuanLyKhoMau_Model import BloodInventory
+from controller.KhoMau_Controller import BloodInventoryController
 from view.YeuCauMau_View import BloodRequestManagementView
 from tkinter import messagebox
 from datetime import datetime
@@ -30,9 +32,9 @@ class BloodRequestController:
                 messagebox.showerror("Lỗi", f"Không thể thêm người hiến máu: {e}")
 
     @staticmethod
-    def get_info_request(request_id):
+    def get_info_request(request_code):
         """Lấy thông tin chi tiết người hiến máu."""
-        data = BloodRequest.get_request_by_id(request_id)
+        data = BloodRequest.get_request_by_request_code(request_code)
         if data:
             return {
                 "Mã bệnh nhân": data[0],
@@ -46,7 +48,7 @@ class BloodRequestController:
             }
         return None
 
-    def update_request(self, request_id, request_data):
+    def update_request(self, request_code, request_data):
         """Xử lý cập nhật thông tin người hiến máu từ View."""
 
         # Xử lý và chuyển đổi ngày tháng nếu có
@@ -59,16 +61,22 @@ class BloodRequestController:
                     return
 
         try:
-            BloodRequest.update_request_by_id(request_id, request_data)
+            BloodRequest.update_request_by_request_code(request_code, request_data)
             self.load_blood_requests()
             messagebox.showinfo("Thành công", "Cập nhật thông tin người hiến máu thành công!")
         except Exception as e:
             print(f"❌ Lỗi khi cập nhật thông tin: {e}")
             messagebox.showerror("Lỗi", f"Không thể cập nhật thông tin: {e}")
 
-    def delete_request_by_id(self, request_id):
-        print(request_id)
-        BloodRequest.delete_request(request_id)
+    def delete_request_by_request_code(self, request_code):
+        print(request_code)
+        BloodRequest.delete_request(request_code)
         # Cập nhật lại bảng sau khi xóa
         messagebox.showinfo("Thành công", "Xóa yêu cầu hiến máu thành công!")
+        self.load_blood_requests()  # Tải lại danh sách yêu cầu máu sau khi xóa
+
+    def confirm_request_by_id(self,request_code,blood_type,rf_factor,volume):
+        BloodRequest.update_status_request_by_request_code(request_code)
+        BloodInventory.update_blood_volume_by_type(blood_type,rf_factor,-volume)
+        messagebox.showinfo("Thành công", "Xác nhận đã yêu cầu hoàn thành!")
         self.load_blood_requests()  # Tải lại danh sách yêu cầu máu sau khi xóa

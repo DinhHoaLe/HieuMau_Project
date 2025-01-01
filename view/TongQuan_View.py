@@ -1,7 +1,7 @@
 import tkinter as tk
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-
+from model.TongQuan_Model import TongQuan_Model
 
 class StatisticalView:
     def __init__(self, root, controller):
@@ -69,8 +69,8 @@ class StatisticalView:
         """Cập nhật giao diện với dữ liệu mới."""
         try:
             # Lấy dữ liệu mới từ controller
-            quick_stats = self.controller.get_quick_stats()
-            blood_groups = self.controller.get_blood_groups_stock()
+            quick_stats = TongQuan_Model.get_quick_stats()
+            blood_groups = TongQuan_Model.get_blood_groups_stock()
 
 
             # Cập nhật phần thống kê nhanh

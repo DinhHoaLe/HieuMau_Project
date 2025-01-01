@@ -27,12 +27,12 @@ class AppView:
 
         # Khởi tạo controller cho "Tổng quan" và lưu vào biến instance
         self.statistical_controller = StatisticalController(self.root)
+        self.blood_inventory_controller = BloodInventoryController(self.root)
         # Frames cho từng giao diện
         self.frames = {
             "Tổng quan": self.statistical_controller.view.create_statistical_frame(),
             "Quản lý người hiến máu": DonorManagementView(self.root, DonorBloodController).create_frame(),
-            "Quản lý kho máu": BloodStorageView(self.root,
-                                                BloodInventoryController(self.root)).create_blood_storage_frame(),
+            "Quản lý kho máu": self.blood_inventory_controller.view.create_blood_storage_frame(),
             "Quản lý yêu cầu máu": BloodRequestManagementView(self.root,
                                                               BloodRequestController).create_request_management_frame(),
             "Quản lý bệnh nhân": StatisticsView(self.root).create_statistics_frame(),
@@ -106,8 +106,12 @@ class AppView:
         self.current_frame = self.frames[frame_name]
         self.current_frame.pack(fill="both", expand=True)
 
+        # Cập nhật giao diện khi chuyển tab
         if frame_name == "Tổng quan":
-            self.statistical_controller.refresh_view()
+            self.statistical_controller.view.update_view()
+        elif frame_name == "Quản lý kho máu":
+            # Gọi phương thức cập nhật kho máu khi chuyển sang tab "Quản lý kho máu"
+            self.blood_inventory_controller.view.update_inventory_display()
 
         # Cập nhật trạng thái active tab
         self.update_active_tab(frame_name)
@@ -120,3 +124,5 @@ class AppView:
                 button.config(bg="#FFDD57")  # Màu vàng cho tab đang active
             else:
                 button.config(bg="#d9d9d9")  # Màu xám cho tab không active
+
+    #commit
