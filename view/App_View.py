@@ -25,9 +25,11 @@ class AppView:
         self.setup_header()
         self.setup_buttons()
 
+        # Khởi tạo controller cho "Tổng quan" và lưu vào biến instance
+        self.statistical_controller = StatisticalController(self.root)
         # Frames cho từng giao diện
         self.frames = {
-            "Tổng quan": StatisticalView(self.root, StatisticalController(self.root)).create_statistical_frame(),
+            "Tổng quan": self.statistical_controller.view.create_statistical_frame(),
             "Quản lý người hiến máu": DonorManagementView(self.root, DonorBloodController).create_frame(),
             "Quản lý kho máu": BloodStorageView(self.root,
                                                 BloodInventoryController(self.root)).create_blood_storage_frame(),
@@ -39,7 +41,7 @@ class AppView:
         # Hiển thị frame mặc định
         self.active_tab = None
         self.current_frame = None
-        self.show_frame("Quản lý yêu cầu máu")
+        self.show_frame("Tổng quan")
 
     def setup_header(self):
         header_frame = tk.Frame(self.root, bg="#610a0a", height=100)
@@ -103,6 +105,9 @@ class AppView:
         # Hiển thị frame mới
         self.current_frame = self.frames[frame_name]
         self.current_frame.pack(fill="both", expand=True)
+
+        if frame_name == "Tổng quan":
+            self.statistical_controller.refresh_view()
 
         # Cập nhật trạng thái active tab
         self.update_active_tab(frame_name)
