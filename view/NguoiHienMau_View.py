@@ -73,7 +73,7 @@ class DonorManagementView:
                 else:
                     self.treeview.column(col, width=dynamic_width)
 
-    def search_donor(self,event=None):
+    def search_donor(self, event=None):
         # Check if event is None (button click), otherwise it's Enter key press
         search_term = self.search_entry.get().strip()
 
@@ -91,20 +91,21 @@ class DonorManagementView:
 
         for request in data:
             # Chuyển datetime.date thành chuỗi
+
+            donor_id = request[0]
             formatted_row = (
-                request[0],  # ID
                 request[1],  # Mã Nhà Tài Trợ
                 request[2],  # Tên Nhà Tài Trợ
                 request[3].strftime('%Y-%m-%d') if isinstance(request[3], datetime.date) else request[3],
                 request[4],  # Giới Tính
                 request[5],  # Nhóm Máu
-                request[6],  # Rh
+                request[6],
                 request[7].strftime('%Y-%m-%d') if isinstance(request[7], datetime.date) else request[7],
-                request[8],  # Số Điện Thoại
+                request[8],
                 request[9],  # Địa Chỉ
                 "Xử lý"  # Dữ liệu cho Action
             )
-            self.treeview.insert("", "end", values=formatted_row)
+            self.treeview.insert("", "end", iid=str(donor_id), values=formatted_row)
 
     def load_donor(self):
         data = DonorModel.get_all_donor()
@@ -116,7 +117,7 @@ class DonorManagementView:
         self.table_frame.pack(pady=20, fill="both", expand=True)
 
         columns = (
-            "Mã định danh", "Mã máu", "Họ và tên", "Sinh nhật", "Giới tính", "Nhóm máu", "Yếu tố Rh",
+            "Mã người hiến máu", "Họ và tên", "Sinh nhật", "Giới tính", "Nhóm máu", "Yếu tố Rh",
             "Ngày hiến gần nhất", "Điện thoại", "Địa chỉ", "Action"
         )
 
@@ -129,8 +130,7 @@ class DonorManagementView:
         self.treeview.pack(fill="both", expand=True)
 
         self.fixed_columns = {
-            "Mã định danh": 120,
-            "Mã máu": 100,
+            "Mã người hiến máu": 200,
             "Sinh nhật": 100,
             "Giới tính": 80,
             "Action": 100,
@@ -177,14 +177,16 @@ class DonorManagementView:
                 # Lấy giá trị DonorID từ dòng được chọn
                 item = self.treeview.item(row_id)
                 values = item.get('values')
+
                 if values:
-                    donor_id = values[0]  # Lấy giá trị Mã định danh (ID) từ cột đầu tiên
+                    donor_id = row_id  # Lấy giá trị Mã định danh (ID) từ cột đầu tiên
                     # Hiển thị menu
+                    print(donor_id)
                     action_menu = tk.Menu(self.root, tearoff=0)
-                    action_menu.add_command(label="Edit", command=lambda: self.show_edit_modal(donor_id))
-                    action_menu.add_command(label="View",
+                    action_menu.add_command(label="Sửa", command=lambda: self.show_edit_modal(donor_id))
+                    action_menu.add_command(label="Xem",
                                             command=lambda: self.modal_blood_donation_history(donor_id))
-                    action_menu.add_command(label="Delete",
+                    action_menu.add_command(label="Xóa",
                                             command=lambda: self.controller.delete_donor(self, donor_id))
                     action_menu.post(event.x_root, event.y_root)
 
@@ -410,20 +412,18 @@ class DonorManagementView:
     def modal_blood_donation_history(self, donor_id=None):
         modal = tk.Toplevel(self.root)
         modal.title("Lịch sử người hiến máu")
-        modal.geometry("420x300")
+        modal.geometry("300x250")
         modal.resizable(False, False)
         modal.transient(self.root)
         modal.grab_set()
 
-        print(donor_id)
         history_data = self.controller.view_donor(donor_id)
-        print("📝 Dữ liệu lịch sử hiến máu:", history_data)
 
         # Tạo Treeview
         table_frame = tk.Frame(modal)
         table_frame.pack(pady=20, fill="both", expand=True)
 
-        columns = ("Mã định danh", "Mã lịch sử", "Ngày hiến", "Thể tích")
+        columns = ("Mã lịch sử", "Ngày hiến", "Thể tích")
 
         style = ttk.Style()
         style.theme_use("clam")
@@ -434,7 +434,6 @@ class DonorManagementView:
         treeview.pack(fill="both", expand=True)
 
         fixed_columns = {
-            "Mã định danh": 120,
             "Mã lịch sử": 100,
             "Ngày hiến": 100,
             "Thể tích": 100,
@@ -445,9 +444,15 @@ class DonorManagementView:
             treeview.column(col, width=fixed_columns.get(col, 100), anchor="center", stretch=False)
 
         # Thêm dữ liệu vào Treeview
-        for record in history_data:
+        last_three_records = history_data[-3:]
+
+        for record in last_three_records:
             print("🔹 Chèn dòng vào Treeview:", record)
-            formatted_record = [str(item) for item in record]  # Chuyển từng phần tử thành chuỗi
+            formatted_record = [
+                str(record[1]),  # RecordCode
+                str(record[2]),  # DonationDate
+                str(record[3])  # VolumeDonated
+            ]
             treeview.insert("", "end", values=formatted_record)
 
         row_count = len(history_data)
@@ -455,4 +460,4 @@ class DonorManagementView:
         max_height = 600  # Giới hạn chiều cao tối đa của modal
 
         # Áp dụng chiều cao mới
-        modal.geometry(f"420x{min(modal_height, max_height)}")
+        modal.geometry(f"300x{min(modal_height, max_height)}")

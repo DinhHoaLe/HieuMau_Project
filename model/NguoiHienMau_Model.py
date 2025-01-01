@@ -123,9 +123,15 @@ class DonorModel:
 
     @staticmethod
     def view_history(donor_id):
+        print(donor_id)
         db = DatabaseConnection()
-        query = "SELECT RecordID, RecordCode, DonationDate, VolumeDonated FROM DonationRecords WHERE DonorID = ?"
+        query = """
+            SELECT *
+            FROM DonationRecords 
+            WHERE DonorID = ?
+        """
         result = db.execute_query(query, (donor_id,))
+        print(result)
         db.close()
         return result
 

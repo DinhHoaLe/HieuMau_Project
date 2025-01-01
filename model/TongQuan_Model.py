@@ -40,7 +40,6 @@ class TongQuan_Model:
                        GROUP BY BloodType, RhFactor"""
             result = db.execute_query(query)
 
-<<<<<<< Updated upstream
             # Chuyển kết quả thành danh sách
             blood_groups = [(row[0], row[1], row[2]) for row in result]
             return blood_groups
@@ -50,12 +49,3 @@ class TongQuan_Model:
         finally:
             db.close()
     #commit
-=======
-        db.close()
-
-        return {
-            "total_blood": result_total_blood[0][0] if result_total_blood else 0,
-            "total_donors": result_total_donors[0][0] if result_total_donors else 0,
-            "pending_requests": result_pending_requests[0][0] if result_pending_requests else 0
-        }
->>>>>>> Stashed changes

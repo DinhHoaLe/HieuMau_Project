@@ -25,19 +25,9 @@ class AppView:
         self.setup_header()
         self.setup_buttons()
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
         # Khởi tạo controller cho "Tổng quan" và lưu vào biến instance
         self.statistical_controller = StatisticalController(self.root)
         self.blood_inventory_controller = BloodInventoryController(self.root)
-=======
-
-
->>>>>>> Stashed changes
-=======
-
-
->>>>>>> Stashed changes
         # Frames cho từng giao diện
         self.frames = {
             "Tổng quan": self.statistical_controller.view.create_statistical_frame(),
@@ -47,7 +37,7 @@ class AppView:
                                                               BloodRequestController).create_request_management_frame(),
             "Quản lý bệnh nhân": StatisticsView(self.root).create_statistics_frame(),
         }
-        self.frames["Quản lý kho máu"].statistical_view = self.frames["Tổng quan"]
+
         # Hiển thị frame mặc định
         self.active_tab = None
         self.current_frame = None
@@ -135,4 +125,4 @@ class AppView:
             else:
                 button.config(bg="#d9d9d9")  # Màu xám cho tab không active
 
-    #commit
+    # commit

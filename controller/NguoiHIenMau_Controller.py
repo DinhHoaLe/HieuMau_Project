@@ -17,6 +17,7 @@ class DonorBloodController:
     @staticmethod
     def get_info_donor(donor_id):
         """Lấy thông tin chi tiết người hiến máu."""
+        print(donor_id)
         data = DonorModel.get_donor_by_id(donor_id)
         if data:
             return {
