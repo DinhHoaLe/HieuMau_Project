@@ -76,7 +76,12 @@ class BloodRequestController:
         self.load_blood_requests()  # Tải lại danh sách yêu cầu máu sau khi xóa
 
     def confirm_request_by_id(self,request_code,blood_type,rf_factor,volume):
-        BloodRequest.update_status_request_by_request_code(request_code)
-        BloodInventory.update_blood_volume_by_type(blood_type,rf_factor,-volume)
-        messagebox.showinfo("Thành công", "Xác nhận đã yêu cầu hoàn thành!")
-        self.load_blood_requests()  # Tải lại danh sách yêu cầu máu sau khi xóa
+        blood_id = BloodInventory.get_blood_id_by_type_and_rh(blood_type,rf_factor)
+        current_volume = BloodInventory.check_blood_inventory(blood_id)
+        if current_volume < volume:
+            messagebox.showinfo("Thất bại", "Lượng máu tồn trong kho không đủ cung cấp")
+        else:
+            BloodRequest.update_status_request_by_request_code(request_code)
+            BloodInventory.update_blood_volume_by_type(blood_type,rf_factor,-volume)
+            messagebox.showinfo("Thành công", "Xác nhận đã yêu cầu hoàn thành!")
+            self.load_blood_requests()  # Tải lại danh sách yêu cầu máu sau khi xác nhận
