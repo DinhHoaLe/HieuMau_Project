@@ -9,9 +9,11 @@ class BloodStorageView:
         self.controller = controller
         self.rh_factor_var = tk.StringVar()  # Define here to be accessible throughout the class
         self.blood_type_var = tk.StringVar()
-    def create_blood_storage_frame(self):
+
         self.setup_inventory_info_section()
         self.setup_blood_entry_section()
+    def create_blood_storage_frame(self):
+
         return self.frame
 
     def setup_inventory_info_section(self):
@@ -24,6 +26,7 @@ class BloodStorageView:
 
         # Tạo 8 ô vuông cho các nhóm máu
         groups = self.controller.get_blood_groups_stock()
+        print("Thông tin nhóm máu ban đầu:", groups)  # Debug: Kiểm tra dữ liệu ban đầu
 
         # Tạo frame chính để chứa các ô vuông
         row_frame = tk.Frame(inventory_frame, bg="#ffffff")
@@ -44,16 +47,32 @@ class BloodStorageView:
 
     def update_inventory_display(self):
         """Cập nhật thông tin lượng máu tồn kho trên giao diện."""
-        groups = self.controller.get_blood_groups_stock()
+        groups = self.controller.get_blood_groups_stock()  # controller trả lại thông tin kho máu mới nhất
+        print("Thông tin nhóm máu trong kho sau khi gọi controller:", groups)
 
         # Lấy các frame con trong inventory_info_section
         inventory_frame = self.frame.winfo_children()[0]  # Phần thông tin tồn kho là frame đầu tiên
         row_frame = inventory_frame.winfo_children()[-1]  # Lấy frame chứa các ô vuông nhóm máu
 
+        # Xóa tất cả widget trong row_frame (tức là các ô vuông nhóm máu cũ)
+        for widget in row_frame.winfo_children():
+            widget.destroy()
+
+        # Tạo lại các ô vuông và thông tin mới
         for i, (group, rh, stock) in enumerate(groups):
-            group_frame = row_frame.winfo_children()[i]  # Lấy từng ô vuông nhóm máu
-            stock_label = group_frame.winfo_children()[-1]  # Lấy label tồn kho
-            stock_label.config(text=f"Tồn: {stock} ml")
+            group_frame = tk.Frame(row_frame, bg="#f2f2f2", width=150, height=150, relief="solid", borderwidth=2)
+            group_frame.grid(row=0, column=i, padx=15, pady=10)  # Sử dụng grid để đặt ô vuông
+
+            # Thêm tên nhóm máu và yếu tố Rh vào ô vuông
+            group_label = tk.Label(group_frame, text=f"{group} {rh}", font=("Arial", 14, "bold"), bg="#f2f2f2")
+            group_label.pack(pady=10)
+
+            # Thêm thông tin tồn kho vào ô vuông
+            stock_label = tk.Label(group_frame, text=f"Tồn: {stock} ml", font=("Arial", 12), bg="#f2f2f2")
+            stock_label.pack(pady=10)
+
+        # Đảm bảo giao diện được làm mới ngay lập tức
+        self.frame.update_idletasks()  # Cập nhật giao diện ngay lập tức
 
     def setup_blood_entry_section(self):
         """Phần quản lý nhập kho"""
@@ -136,6 +155,7 @@ class BloodStorageView:
 
     def show(self):
         self.frame.pack(fill="both", expand=True)
+
 
     def hide(self):
         self.frame.pack_forget()

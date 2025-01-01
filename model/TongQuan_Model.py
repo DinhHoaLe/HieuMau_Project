@@ -48,3 +48,4 @@ class TongQuan_Model:
             return []
         finally:
             db.close()
+    #commit

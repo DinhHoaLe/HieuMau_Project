@@ -18,10 +18,9 @@ class BloodRequest:
     @staticmethod
     def get_all_requests():
         db = DatabaseConnection()
-        # query = "SELECT * FROM Requests"
         query = """
                SELECT 
-                   RQ.RequestID,
+                   RQ.RequestCode,
                    PT.PatientID, 
                    PT.FullName, 
                    RQ.BloodType, 
@@ -37,17 +36,19 @@ class BloodRequest:
                    PATIENTS PT 
                ON 
                    RQ.PatientID = PT.PatientID
-               """
+               ORDER BY 
+                   RQ.RequestCode DESC  -- Sắp xếp theo RequestCode giảm dần (lớn đến nhỏ)
+        """
 
         result = db.execute_query(query)
         db.close()
         return result
 
     @staticmethod
-    def get_request_by_id(request_id):
+    def get_request_by_request_code(request_code):
         db = DatabaseConnection()
-        query = "SELECT PatientID, RequestingDepartment, BloodType, RhFactor, VolumeRequested, RequestDate, Status, Notes FROM Requests WHERE RequestID = ?"
-        result = db.execute_query(query, (request_id,))
+        query = "SELECT PatientID, RequestingDepartment, BloodType, RhFactor, VolumeRequested, RequestDate, Status, Notes FROM Requests WHERE RequestCode = ?"
+        result = db.execute_query(query, (request_code,))
         db.close()
         if result:
             return result[0]
@@ -88,7 +89,7 @@ class BloodRequest:
             db.close()
 
     @staticmethod
-    def update_request_by_id(request_id, request_data):
+    def update_request_by_request_code(request_code, request_data):
         """Cập nhật thông tin người hiến máu trong CSDL."""
         db = DatabaseConnection()
         query = """
@@ -102,7 +103,7 @@ class BloodRequest:
                 RequestDate = ?,
                 Status = ?,
                 Notes = ?
-            WHERE RequestID = ?;
+            WHERE RequestCode = ?;
         """
         try:
             db.execute_query(query, (
@@ -114,7 +115,7 @@ class BloodRequest:
                 request_data.get("Ngày yêu cầu"),
                 request_data.get("Trạng thái"),
                 request_data.get("Ghi chú"),
-                request_id
+                request_code
             ))
             db.commit()
             print("✅ Thông tin yêu cầu hiến máu đã được cập nhật thành công!")
@@ -125,11 +126,11 @@ class BloodRequest:
             db.close()
 
     @staticmethod
-    def delete_request(request_id):
-        print(request_id)
+    def delete_request(request_code):
+        print(request_code)
         db = DatabaseConnection()
-        query = "DELETE FROM Requests WHERE RequestID = ?"
-        db.execute_query(query, (request_id,))
+        query = "DELETE FROM Requests WHERE RequestCode = ?"
+        db.execute_query(query, (request_code,))
         db.commit()
         db.close()
 
@@ -139,7 +140,7 @@ class BloodRequest:
         db = DatabaseConnection()
         query = """
                 SELECT 
-                   RQ.RequestID,
+                   RQ.RequestCode,
                    PT.PatientID, 
                    PT.FullName, 
                    RQ.BloodType, 
@@ -170,4 +171,10 @@ class BloodRequest:
         finally:
             db.close()  # Đảm bảo đóng kết nối sau khi truy vấn xong
 
-
+    @staticmethod
+    def update_status_request_by_request_code(request_code):
+        db = DatabaseConnection()
+        query = "UPDATE Requests SET Status = N'Đã hoàn thành' WHERE RequestCode = ?"
+        db.execute_query(query,request_code)
+        db.commit()  # Lưu thay đổi vào cơ sở dữ liệu
+        db.close()

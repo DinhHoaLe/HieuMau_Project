@@ -4,7 +4,6 @@ import re
 from model.QuanLyKhoMau_Model import ImportInventory,BloodInventory,DonationRecords
 from model.NguoiHienMau_Model import DonorModel
 from view.KhoMau_View import BloodStorageView
-from controller.TongQuan_Controller import StatisticalController
 
 class BloodInventoryController:
     def __init__(self, root):
@@ -49,13 +48,9 @@ class BloodInventoryController:
 
     def get_blood_groups_stock(self):
         """Lay thong tin kho mau"""
-        return BloodInventory.get_blood_groups_stock()
-
-    def update_blood_entry_section(self):
-        """
-        Update thong tin nhap kho trong View
-        """
-        self.view.setup_blood_entry_section
+        blood_groups = BloodInventory.get_blood_groups_stock()
+        print("Dữ liệu kho máu:", blood_groups)
+        return blood_groups
 
     def get_list_load_blood_entry_inf(self):
         """Lay thong tin load vao bang thong tin nhap kho"""

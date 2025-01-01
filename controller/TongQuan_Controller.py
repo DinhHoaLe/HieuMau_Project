@@ -4,7 +4,7 @@ from view.TongQuan_View import StatisticalView
 class StatisticalController:
     def __init__(self,root):
         self.model = TongQuan_Model()
-        self.view = StatisticalView(root,self.model)
+        self.view = StatisticalView(root,self)
 
     def get_quick_stats_model(self):
         """
@@ -19,3 +19,5 @@ class StatisticalController:
         return self.model.get_blood_groups_stock()
     def refresh_view(self):
         self.view.update_view()
+
+    #commit
