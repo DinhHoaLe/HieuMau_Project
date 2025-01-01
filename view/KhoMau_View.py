@@ -1,15 +1,22 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 
+from controller.TongQuan_Controller import StatisticalController
+from view.TongQuan_View import StatisticalView
+
 
 class BloodStorageView:
-    def __init__(self, root,controller):
+    def __init__(self, root, controller):
         self.root = root
         self.frame = tk.Frame(self.root, bg="white")
         self.controller = controller
         self.rh_factor_var = tk.StringVar()  # Define here to be accessible throughout the class
         self.blood_type_var = tk.StringVar()
 
+<<<<<<< Updated upstream
+=======
+    def create_blood_storage_frame(self):
+>>>>>>> Stashed changes
         self.setup_inventory_info_section()
         self.setup_blood_entry_section()
     def create_blood_storage_frame(self):
@@ -88,7 +95,7 @@ class BloodStorageView:
         entry_button.pack(pady=10, padx=10, anchor="w")
 
         # Cấu hình bảng nhập kho
-        columns = ("Mã nhập kho", "Nhóm máu", "Yếu tố Rh","Lượng máu", "Ngày nhập", "Nguồn")
+        columns = ("Mã nhập kho", "Nhóm máu", "Yếu tố Rh", "Lượng máu", "Ngày nhập", "Nguồn")
 
         # Tạo style cho bảng
         style = ttk.Style()
@@ -114,7 +121,6 @@ class BloodStorageView:
 
         # Kết nối thanh cuộn với bảng
         scroll_y.config(command=self.entry_treeview.yview)
-
 
         # Cấu hình các cột và tiêu đề
         for col in columns:
@@ -151,7 +157,7 @@ class BloodStorageView:
         for unit in entry_data:
             # unit là đối tượng ImportInventory, lấy các giá trị tương ứng
             self.entry_treeview.insert("", "end", values=(
-            unit.import_code, unit.blood_type, unit.rh_factor, unit.volume, unit.import_date, unit.source))
+                unit.import_code, unit.blood_type, unit.rh_factor, unit.volume, unit.import_date, unit.source))
 
     def show(self):
         self.frame.pack(fill="both", expand=True)
@@ -230,7 +236,6 @@ class BloodStorageView:
 
         donor_frame.grid(row=1, column=0, columnspan=2, pady=5, sticky="ew")
 
-
         # Tên cơ sở (Label và Entry)
         facility_var = tk.StringVar()
         facility_frame = tk.Frame(form_frame, bg="#ffffff")
@@ -241,7 +246,6 @@ class BloodStorageView:
         facility_entry.grid(row=2, column=1, padx=5, pady=5, sticky="ew")
 
         facility_frame.grid(row=2, column=0, columnspan=2, pady=5, sticky="ew")
-
 
         # Nhóm máu (Label và Dropdown)
         blood_type_var = tk.StringVar()
@@ -255,8 +259,6 @@ class BloodStorageView:
 
         blood_frame.grid(row=4, column=0, columnspan=2, pady=5, sticky="ew")
 
-
-
         # Yếu tố Rh (Label và Dropdown)
         rh_factor_var = tk.StringVar()
         rh_frame = tk.Frame(form_frame, bg="#ffffff")
@@ -268,8 +270,6 @@ class BloodStorageView:
 
         rh_frame.grid(row=7, column=0, columnspan=2, pady=5, sticky="ew")
 
-
-
         # Lượng máu (Label và Entry)
         quantity_var = tk.StringVar()
         quantity_frame = tk.Frame(form_frame, bg="#ffffff")
@@ -280,8 +280,6 @@ class BloodStorageView:
         quantity_entry.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
 
         quantity_frame.grid(row=9, column=0, columnspan=2, pady=5, sticky="ew")
-
-
 
         # Nút xác nhận
         def submit_entry():
@@ -314,16 +312,16 @@ class BloodStorageView:
 
             # Nếu không có lỗi tiến hành thêm nhập kho
             if source_var.get() == "Người hiến máu":
-                source= "Người hiến: " + donor_var.get()
+                source = "Người hiến: " + donor_var.get()
             else:
                 source = "Cơ sở: " + facility_var.get()
             # Gọi trực tiếp hàm từ controller
             self.controller.add_blood_entry(
                 volume=quantity_value,
-                source = source,
+                source=source,
                 blood_type=blood_type_var.get(),
                 rh_factor=rh_factor_var.get()
-                )
+            )
             self.load_blood_entry_info_from_db()
             self.update_inventory_display()
             popup.destroy()
@@ -367,6 +365,3 @@ class BloodStorageView:
 
         # Hiển thị khung đầu tiên (dựa trên giá trị mặc định)
         toggle_source("Người hiến máu")
-
-
-
