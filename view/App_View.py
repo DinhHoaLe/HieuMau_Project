@@ -26,9 +26,14 @@ class AppView:
         self.setup_buttons()
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         # Khởi tạo controller cho "Tổng quan" và lưu vào biến instance
         self.statistical_controller = StatisticalController(self.root)
         self.blood_inventory_controller = BloodInventoryController(self.root)
+=======
+
+
+>>>>>>> Stashed changes
 =======
 
 

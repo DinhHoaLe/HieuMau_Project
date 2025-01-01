@@ -14,7 +14,10 @@ class BloodStorageView:
         self.blood_type_var = tk.StringVar()
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
     def create_blood_storage_frame(self):
 >>>>>>> Stashed changes
         self.setup_inventory_info_section()

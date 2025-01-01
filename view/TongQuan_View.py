@@ -68,11 +68,15 @@ class StatisticalView:
         self.chart_frame = tk.Frame(self.frame, bg="#ffffff", pady=10)
         self.chart_frame.pack(pady=10, fill="x")
 
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         chart_label = tk.Label(self.chart_frame, text="Tồn kho theo nhóm máu", font=("Arial", 14, "bold"), bg="#ffffff")
         chart_label.pack(padx=5, pady=5, anchor="center")
 
         self.fig, self.ax = plt.subplots(figsize=(6, 4))
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 
     def update_view(self):
@@ -125,10 +129,26 @@ class StatisticalView:
         # Làm sạch biểu đồ cũ
         self.ax.clear()
 >>>>>>> Stashed changes
+=======
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self.chart_frame)
+        self.canvas.get_tk_widget().pack(pady=10, expand=True)
+
+        self.draw_chart()
+
+    def draw_chart(self):
+        """Vẽ hoặc làm mới biểu đồ từ dữ liệu tồn kho"""
+        blood_groups = self.controller.get_blood_groups_stock()
+        labels = [f"{group} {rh}" for group, rh, _ in blood_groups]
+        values = [stock for _, _, stock in blood_groups]
+
+        # Làm sạch biểu đồ cũ
+        self.ax.clear()
+>>>>>>> Stashed changes
         self.ax.bar(labels, values, color='#007BFF')
         self.ax.set_xlabel('Nhóm máu')
         self.ax.set_ylabel('Tồn kho (ml)')
         self.ax.set_title('Biểu đồ tồn kho nhóm máu')
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
         plt.tight_layout()
 
@@ -142,9 +162,15 @@ class StatisticalView:
 
 =======
 
+=======
+
+>>>>>>> Stashed changes
         self.canvas.draw()
 
     def update_chart(self):
         """Cập nhật dữ liệu và vẽ lại biểu đồ"""
         self.draw_chart()
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
