@@ -387,7 +387,7 @@ class BloodRequestManagementView:
             print("Selected Item:", request_code)
             print("Type of Selected Item:", type(request_code))
 
-            self.controller.delete_request_by_id(self,request_code)
+            self.controller.delete_request_by_request_code(self,request_code)
             # self.treeview.delete(selected_item)
             messagebox.showinfo("Thông báo", "Dòng đã bị xóa.")
         else:

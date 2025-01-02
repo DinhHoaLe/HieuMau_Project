@@ -137,6 +137,7 @@ class BloodRequest:
     @staticmethod
     def search_requests_by_patient(search_term):
         """Tìm kiếm thông tin yêu cầu hiến máu theo mã bệnh nhân hoặc tên bệnh nhân."""
+        print(search_term)
         db = DatabaseConnection()
         query = """
                 SELECT 
@@ -156,7 +157,7 @@ class BloodRequest:
                    PATIENTS PT 
                ON 
                    RQ.PatientID = PT.PatientID
-                WHERE pt.PatientID LIKE ? OR pt.FullName LIKE ?
+                WHERE rq.RequestCode LIKE ? OR pt.FullName LIKE ?
                 """
         try:
             result = db.execute_query(query, ('%' + search_term + '%', '%' + search_term + '%'))

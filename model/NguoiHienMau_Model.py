@@ -138,10 +138,11 @@ class DonorModel:
     @staticmethod
     def search_requests_by_donors(search_term):
         """Tìm kiếm thông tin yêu cầu hiến máu theo mã người hiến hoặc tên người hiến."""
+        print(search_term)
         db = DatabaseConnection()
         query = """
                     SELECT * FROM DONORS
-                    WHERE DonorID LIKE ? OR FullName LIKE ?
+                    WHERE DonorCode LIKE ? OR FullName LIKE ?
                     """
         try:
             result = db.execute_query(query, ('%' + search_term + '%', '%' + search_term + '%'))

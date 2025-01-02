@@ -40,7 +40,7 @@ class DonorManagementView:
         search_button = tk.Button(
             search_frame,
             text="Tìm kiếm",
-            command=lambda: self.search_donor,
+            command=self.search_donor,
             font=("Arial", 12),
             bg="#D3D3D3",
             fg="black"
@@ -76,10 +76,12 @@ class DonorManagementView:
     def search_donor(self, event=None):
         # Check if event is None (button click), otherwise it's Enter key press
         search_term = self.search_entry.get().strip()
-
+        print(search_term)
         if not search_term:
             result = DonorModel.get_all_donor()
+
         else:
+            print(search_term)
             result = DonorModel.search_requests_by_donors(search_term)  # Perform search with the term
 
         # Call method to update the table or UI with results
@@ -444,9 +446,9 @@ class DonorManagementView:
             treeview.column(col, width=fixed_columns.get(col, 100), anchor="center", stretch=False)
 
         # Thêm dữ liệu vào Treeview
-        last_three_records = history_data[-3:]
+        # last_three_records = history_data[-3:]
 
-        for record in last_three_records:
+        for record in history_data:
             print("🔹 Chèn dòng vào Treeview:", record)
             formatted_record = [
                 str(record[1]),  # RecordCode
